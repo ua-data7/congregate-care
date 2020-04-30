@@ -21,7 +21,7 @@ if(os.path.exists(DOTENV_FILE)):
         'MEDIA_PATH', 'MEDIA_ROOT', 'PROTECTED_PATH', 'PROTECTED_ROOT',
         'TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'SENTRY_DSN_URL', 'ROOT_LOG_LEVEL',
         'DJANGO_LOG_LEVEL', 'DJANGO_REQUEST_LOG_LEVEL', 'TWILIO_ACCOUNT_SID',
-        'TWILIO_AUTH_TOKEN', 'GOOGLE_RECAPTCHA_SECRET_KEY',
+        'TWILIO_AUTH_TOKEN'
     ]
     for v in import_vars:
         globals()[v] = os.getenv(v, default=None)
