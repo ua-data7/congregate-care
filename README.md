@@ -66,8 +66,6 @@ Important vars to edit during a new deploy are:
              "PORT": "5432",
          }
      }
-    # redcap api token:
-    REDCAP_TOKEN = <REPLACE THIS>
 
     # Twilio Settings (UA D7 currently):
     # currently we can't programatically add numbers to Notify/Messaging services,
@@ -79,9 +77,6 @@ Important vars to edit during a new deploy are:
         'en': '<TOKEN HERE>',
         'es': '<TOKEN HERE>',
     }	
-
-    # Google recaptcha
-    GOOGLE_RECAPTCHA_SECRET_KEY = <REPLACE THIS>
 
 
 This uses an old import trick so beware, it 'loads' itself into the `/settings/__init__.py` so that base/local/dotenv can be combined into one voltron setting module.
