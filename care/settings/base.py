@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'care.data',
     'care.frontend',
     'care.sms',
-    'care.survey'
+    'care.survey',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
