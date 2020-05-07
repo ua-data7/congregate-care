@@ -9,6 +9,7 @@ from care.sms.models import TwilioMessage
 from care.sms.models import Binding
 from care.sms.models import send_sms_message
 from care.sms.models import send_email_message
+from care.sms.twilio import twilio_client
 from care.sms import serializers
 from rest_framework import parsers
 from django import forms
@@ -16,6 +17,7 @@ from django.http import HttpResponse
 from rest_framework import viewsets, permissions, generics
 from rest_framework.response import Response
 from rest_framework import status
+from twilio.rest import TwilioException
 import pytz
 
 
@@ -145,3 +147,22 @@ class SendEmailMessageAPIView(generics.CreateAPIView):
         uuid = request.data.get('uuid')
         send_email_message(uuid, message, bulk=bulk)
         return Response(status=status.HTTP_200_OK)
+
+
+class TwilioConversationReplyAPIView(generics.CreateAPIView):
+    queryset = TwilioConversation.objects.none()
+    serializer_class = serializers.TwilioConversationSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def create(self, request, *args, **kwargs):
+        conversation_sid = request.data.get('conversation_sid', None)
+        message = request.data.get('message', None)
+        if not conversation_sid:
+            return Response('conversation_sid is a required parameter', status=status.HTTP_400_BAD_REQUEST)
+        if not message:
+            return Response('message is a required parameter', status=status.HTTP_400_BAD_REQUEST)
+        try:
+            message = twilio_client.conversations.conversations(conversation_sid).messages.create(author='system', body=message)
+            return Response(message.sid, status=status.HTTP_201_CREATED)
+        except TwilioException as e:
+            return Response(e, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
