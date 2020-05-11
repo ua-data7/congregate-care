@@ -1,5 +1,6 @@
 from django.conf import settings
 import requests
+import datetime
 from rest_framework import viewsets, permissions, generics
 from rest_framework.response import Response
 from care.sms.models import QualtricsSubmission
@@ -168,3 +169,30 @@ class TwilioConversationReplyAPIView(generics.CreateAPIView):
             return Response(message.sid, status=status.HTTP_201_CREATED)
         except TwilioException as e:
             return Response(e, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+class QualtricsSubmissionList(generics.ListAPIView):
+    serializer_class = serializers.QualtricsSubmissionSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    
+    def get_queryset(self):
+        params = self.request.query_params
+        queryset = QualtricsSubmission.objects.all()
+
+        if 'date_min' in params:
+            parsed_date = datetime.datetime.strptime(params['date_min'], r'%m/%d/%Y')
+            queryset = queryset.filter(created_date__gte=parsed_date)
+
+        if 'date_max' in params:
+            parsed_date = datetime.datetime.strptime(params['date_max'], r'%m/%d/%Y')
+            queryset = queryset.filter(created_date__lt=parsed_date)
+
+        if 'new_cases' in params and params['new_cases']:
+            queryset = queryset.filter(reported_new_cases=True)
+
+        if 'cluster' in params and params['cluster']:
+            queryset = queryset.filter(facility__cluster=True)
+
+        return queryset
+        
