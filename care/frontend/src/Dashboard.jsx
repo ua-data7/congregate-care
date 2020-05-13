@@ -5,7 +5,7 @@ import {
     Typography, Grid, Toolbar, Container, CssBaseline,
     Checkbox, FormControlLabel, TableContainer, Table, TableHead,
     TableBody, TableRow, Input, TableCell, AppBar, makeStyles,
-    TablePagination, Paper
+    Paper, TableSortLabel
 } from '@material-ui/core';
 import MaskedInput from 'react-text-mask';
 
@@ -22,10 +22,7 @@ function DateInput(props) {
 }
 
 const useStyles = makeStyles(theme => ({
-    appBarSpacer: theme.mixins.toolbar,
-    grayed: {
-        color: '#555555'
-    }
+    appBarSpacer: theme.mixins.toolbar
 }));
 
 export default function Dashboard() {
@@ -46,10 +43,14 @@ export default function Dashboard() {
     });
 
     const [selected, setSelected] = React.useState([]);
+    const [order, setOrder] = React.useState('created_date');
 
     React.useEffect(() => {
         axios.get('/api/submissions', {
-            params: filters
+            params: {
+                ...filters,
+                order
+            }
         }).then(res => {
             setDbState(prev => ({...prev,
                 loading: false,
@@ -66,7 +67,7 @@ export default function Dashboard() {
             loading: true
         }));
         
-    }, [filters]);
+    }, [filters, order]);
 
     const classes = useStyles();
 
@@ -87,7 +88,7 @@ export default function Dashboard() {
                         <DashboardFilters loading={dbState.loading} filters={filters} setFilters={setFilters} />
                     </Grid>
                     <Grid item xs={12}>
-                        <SubmissionTable loading={dbState.loading} submissions={dbState.submissions} selected={selected} setSelected={setSelected}/>
+                        <SubmissionTable loading={dbState.loading} submissions={dbState.submissions} selected={selected} setSelected={setSelected} order={order} setOrder={setOrder}/>
                     </Grid>
                 </Grid>
             </Container>
@@ -95,7 +96,7 @@ export default function Dashboard() {
     );
 }
 
-function SubmissionTable({submissions, selected, setSelected}) {
+function SubmissionTable({loading, submissions, selected, setSelected, order, setOrder}) {
     function handleClick (id) {
         let selectedIndex = selected.indexOf(id);
         let newSelected = [];
@@ -115,6 +116,41 @@ function SubmissionTable({submissions, selected, setSelected}) {
         setSelected(newSelected);
     }
 
+    function handleSort(key) {
+        if (order.indexOf(key) !== -1) {
+            if (order.charAt(0) === '-') {
+                setOrder(key);
+            } else {
+                setOrder('-' + key);
+            }
+        } else {
+            setOrder(key);
+        }
+    }
+
+    let sortKeys = [
+        {
+            label: 'Facility',
+            key: 'facility__name'
+        },
+        {
+            label: 'Address',
+            key: 'facility__address'
+        },
+        {
+            label: 'Phone',
+            key: 'facility__phones'    
+        },
+        {
+            label: 'Email',
+            key: 'facility__emails'
+        },
+        {
+            label: 'End Date',
+            key: 'created_date'
+        }
+    ];
+
     return (
         <Paper>
             <Toolbar>
@@ -122,22 +158,20 @@ function SubmissionTable({submissions, selected, setSelected}) {
             </Toolbar>
             <TableContainer>
                 <Table>
-                    {/* <EnhancedTableHead
-                        classes={classes}
-                        numSelected={selected.length}
-                        order={order}
-                        orderBy={orderBy}
-                        onSelectAllClick={handleSelectAllClick}
-                        onRequestSort={handleRequestSort}
-                        rowCount={rows.length}
-                    /> */}
                     <TableHead>
                         <TableRow>
-                            <TableCell>Facility</TableCell>
-                            <TableCell>Address</TableCell>
-                            <TableCell>Phone</TableCell>
-                            <TableCell>Email</TableCell>
-                            <TableCell>End&nbsp;Date</TableCell>
+                            <TableCell padding="checkbox"></TableCell>
+                            {sortKeys.map(sortKey => (
+                                <TableCell key={sortKey.key}>
+                                    <TableSortLabel
+                                        active={order.indexOf(sortKey.key) !== -1}
+                                        direction={order.charAt(0) === '-' ? 'desc' : 'asc'}
+                                        onClick={() => handleSort(sortKey.key)}
+                                    >
+                                        {sortKey.label}
+                                    </TableSortLabel>
+                                </TableCell>
+                            ))}
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -163,7 +197,7 @@ function SubmissionTable({submissions, selected, setSelected}) {
                     </TableBody>
                 </Table>
             </TableContainer>
-        {/* TablePagination goes here
+        {/*
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"

@@ -197,8 +197,8 @@ class QualtricsSubmissionList(generics.ListAPIView):
         if 'liason' in params and params['liason']:
             queryset = queryset.filter(facility__liason=params['liason'])
 
-        if 'sort' in params:
-            queryset = queryset.order_by(params['sort'])
+        if 'order' in params:
+            queryset = queryset.order_by(params['order'])
 
         return queryset
         
