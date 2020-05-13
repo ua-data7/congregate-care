@@ -1,13 +1,29 @@
 from rest_framework import serializers
-from care.sms.models import EnrolledUser, TwilioConversation, TwilioMessage
+from care.sms.models import TwilioConversation
+from care.sms.models import TwilioMessage
+from care.sms.models import Facility
 
 
-class EnrolledUserSerializer(serializers.ModelSerializer):
+class FacilitySerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = EnrolledUser
+        model = Facility
         fields = (
             'identity',
+            'name',
+            'facility_size',
+            'cluster',
+            'address',
+            'liasons',
+            'emails',
+            'phones',
+            'preferred_contact',
+            'tags',
+            'reporting_new_cases',
+            'last_new_cases_reported',
+            'last_upload_date',
+            'last_modified',
+            'created_date',
         )
 
 
