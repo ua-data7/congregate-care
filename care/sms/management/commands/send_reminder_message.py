@@ -8,9 +8,14 @@ class Command(BaseCommand):
     help = 'Sends a reminder with link to survey to SMS/email users'
 
     def handle(self, *args, **options):
+        az_now = pytz.timezone('America/Phoenix').localize(pytz.datetime.datetime.now())
         for facility in Facility.objects.filter(preferred_contact=PreferredContactType.SMS):
             message = f'Please update your facility status at {settings.QUALTRICS_SURVEY_LINK}?uuid={facility.identity}'
             send_sms_message(facility.identity, message, bulk=False)
+            facility.last_message_date = az_now
+            facility.save()
         for facility in Facility.objects.filter(preferred_contact=PreferredContactType.EMAIL):
             message = f'Hello {facility.name},\nPlease update your facility status at {settings.QUALTRICS_SURVEY_LINK}?uuid={facility.identity}\nRegards, Pima County Health Department'
             send_email_message(facility.identity, settings.DEFAULT_REMINDER_EMAIL_SUBJECT, message, bulk=False)
+            facility.last_message_date = az_now
+            facility.save()

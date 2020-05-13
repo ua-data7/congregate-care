@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from care.sms.models import QualtricsSubmission
 from care.sms.models import TwilioConversation
 from care.sms.models import TwilioMessage
+from care.sms.models import Facility
 from care.sms.models import Binding
 from care.sms.models import send_sms_message
 from care.sms.models import send_email_message
