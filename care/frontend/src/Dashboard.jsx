@@ -8,6 +8,7 @@ import {
 
 import SubmissionTable from './SubmissionTable';
 import DashboardFilters from './DashboardFilters';
+import MessageSender from './MessageSender';
 
 
 const useStyles = makeStyles(theme => ({
@@ -79,6 +80,9 @@ export default function Dashboard() {
                     </Grid>
                     <Grid item xs={12}>
                         <SubmissionTable loading={dbState.loading} submissions={dbState.submissions} selected={selected} setSelected={setSelected} order={order} setOrder={setOrder}/>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <MessageSender selected={selected} />
                     </Grid>
                 </Grid>
             </Container>
