@@ -180,19 +180,25 @@ class QualtricsSubmissionList(generics.ListAPIView):
         params = self.request.query_params
         queryset = QualtricsSubmission.objects.all()
 
-        if 'date_min' in params:
-            parsed_date = datetime.datetime.strptime(params['date_min'], r'%m/%d/%Y')
+        if 'minDate' in params:
+            parsed_date = datetime.datetime.strptime(params['minDate'], r'%m/%d/%Y')
             queryset = queryset.filter(created_date__gte=parsed_date)
 
-        if 'date_max' in params:
-            parsed_date = datetime.datetime.strptime(params['date_max'], r'%m/%d/%Y')
+        if 'maxDate' in params:
+            parsed_date = datetime.datetime.strptime(params['maxDate'], r'%m/%d/%Y')
             queryset = queryset.filter(created_date__lt=parsed_date)
 
-        if 'new_cases' in params and params['new_cases']:
+        if 'newCases' in params and params['newCases'] == 'true':
             queryset = queryset.filter(reported_new_cases=True)
 
-        if 'cluster' in params and params['cluster']:
+        if 'cluster' in params and params['cluster'] == 'true':
             queryset = queryset.filter(facility__cluster=True)
+
+        if 'liason' in params and params['liason']:
+            queryset = queryset.filter(facility__liason=params['liason'])
+
+        if 'sort' in params:
+            queryset = queryset.order_by(params['sort'])
 
         return queryset
         
