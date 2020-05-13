@@ -186,7 +186,8 @@ class QualtricsSubmissionList(generics.ListAPIView):
 
         if 'maxDate' in params:
             parsed_date = datetime.datetime.strptime(params['maxDate'], r'%m/%d/%Y')
-            queryset = queryset.filter(created_date__lt=parsed_date)
+            
+            queryset = queryset.filter(created_date__lt=parsed_date + datetime.timedelta(days=1))
 
         if 'newCases' in params and params['newCases'] == 'true':
             queryset = queryset.filter(reported_new_cases=True)
@@ -196,6 +197,10 @@ class QualtricsSubmissionList(generics.ListAPIView):
 
         if 'liason' in params and params['liason']:
             queryset = queryset.filter(facility__liason=params['liason'])
+
+        liasons = params.getlist('liasons[]')
+        if len(liasons):
+            queryset = queryset.filter(facility__liasons__in=liasons)
 
         if 'order' in params:
             queryset = queryset.order_by(params['order'])

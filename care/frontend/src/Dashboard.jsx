@@ -5,7 +5,7 @@ import {
     Typography, Grid, Toolbar, Container, CssBaseline,
     Checkbox, FormControlLabel, TableContainer, Table, TableHead,
     TableBody, TableRow, Input, TableCell, AppBar, makeStyles,
-    Paper, TableSortLabel
+    Paper, TableSortLabel, FormControl, InputLabel, Select, MenuItem
 } from '@material-ui/core';
 import MaskedInput from 'react-text-mask';
 
@@ -37,6 +37,7 @@ export default function Dashboard() {
         minDate: null,
         maxDate: null,
         newCases: false,
+        cluster: false,
         reportedAfter: null,
         liasons: [],
         size: null
@@ -213,6 +214,21 @@ function SubmissionTable({loading, submissions, selected, setSelected, order, se
 
 
 function DashboardFilters({filters, setFilters, loading}) {
+
+    let liasons = [
+        'Deb Agristo',
+        'Allison Burnett',
+        'Janet Corley',
+        'Kat Davis',
+        'Gabby Flores',
+        'Emerson Kuhn',
+        'Lisa Longo',
+        'Said Martinez',
+        'Melody Mena',
+        'Justin Tantoon',
+        'Clementina'
+    ];
+
     return (
         <Paper>
             <Toolbar>
@@ -264,6 +280,32 @@ function DashboardFilters({filters, setFilters, loading}) {
                 <Grid item xs={1}>
                     <Typography>Filter:</Typography>
                 </Grid>
+                <Grid item xs={3}>
+                    <FormControl style={{minWidth: '150px', maxWidth: '250px'}}>
+                        <InputLabel id="liason-label">Liason</InputLabel>
+                        <Select
+                            labelId="liason-label"
+                            multiple
+                            value={filters.liasons}
+                            onChange={event => {
+                                let liasons = event.target.value;    
+                                setFilters(prev => ({
+                                    ...prev,
+                                    liasons: liasons || null
+                                }));
+                            }}
+                            input={<Input />}
+                            renderValue={(selected) => selected.join(', ')}
+                        >
+                        {liasons.map((liason) => (
+                            <MenuItem key={liason} value={liason}>
+                                <Checkbox checked={filters.liasons.indexOf(liason) !== -1} />
+                                {liason}
+                            </MenuItem>
+                        ))}
+                        </Select>
+                    </FormControl>
+                </Grid>
                 <Grid item xs={2}>
                     <FormControlLabel
                         control={<Checkbox
@@ -279,6 +321,23 @@ function DashboardFilters({filters, setFilters, loading}) {
                             disabled={loading} 
                         />}
                         label="New Cases"
+                    />
+                </Grid>
+                <Grid item xs={2}>
+                    <FormControlLabel
+                        control={<Checkbox
+                            checked={filters.cluster}
+                            onChange={event => {
+                                let checked = event.target.checked;
+                                setFilters(prev => ({
+                                    ...prev,
+                                    cluster: checked
+                                }));
+                            }}
+                            name="cluster"
+                            disabled={loading} 
+                        />}
+                        label="Cluster"
                     />
                 </Grid>
             </Toolbar>
