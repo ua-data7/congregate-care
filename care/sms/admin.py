@@ -22,7 +22,7 @@ class BindingAdmin(admin.ModelAdmin):
     exclude = ['binding_sid', 'service_sid', 'binding_type']
 
 class QualtricsSubmissionAdmin(admin.ModelAdmin):
-    list_display = ['created_date', 'facility', 'new_cases', 'reported_by']
+    list_display = ['created_date', 'facility', 'new_cases']
 
 admin.site.register(Binding, BindingAdmin)
 admin.site.register(Facility, FacilityAdmin)

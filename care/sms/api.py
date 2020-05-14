@@ -172,6 +172,30 @@ class TwilioConversationReplyAPIView(generics.CreateAPIView):
 
 
 
+class FacilityList(generics.ListAPIView):
+    serializer_class = serializers.FacilitySerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    
+    def get_queryset(self):
+        params = self.request.query_params
+        queryset = Facility.objects.all()
+
+        if 'newCases' in params and params['newCases'] == 'true':
+            queryset = queryset.filter(reporting_new_cases=True)
+
+        if 'cluster' in params and params['cluster'] == 'true':
+            queryset = queryset.filter(cluster=True)
+
+        liasons = params.getlist('liasons[]')
+        if len(liasons):
+            queryset = queryset.filter(liasons__in=liasons)
+
+        if 'order' in params:
+            queryset = queryset.order_by(params['order'])
+
+        return queryset
+
+
 class QualtricsSubmissionList(generics.ListAPIView):
     serializer_class = serializers.QualtricsSubmissionSerializer
     permission_classes = (permissions.IsAuthenticated,)
