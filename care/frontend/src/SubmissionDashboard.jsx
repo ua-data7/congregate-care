@@ -9,11 +9,12 @@ import SubmissionTable from './SubmissionTable';
 import DashboardFilters from './DashboardFilters';
 import MessageSender from './MessageSender';
 
-export default function Dashboard() {
+export default function SubmissionDashboard({classes}) {
     const [dbState, setDbState] = React.useState({
         loading: true,
         error: false,
         submissions: [],
+        total: 0,
         filters: {}
     });
 
@@ -27,19 +28,25 @@ export default function Dashboard() {
         size: null
     });
 
+    const [cursor, setCursor] = React.useState({
+        order: 'created_date',
+        page: 0
+    });
+
     const [selected, setSelected] = React.useState([]);
-    const [order, setOrder] = React.useState('created_date');
 
     React.useEffect(() => {
         axios.get('/api/submissions', {
             params: {
                 ...filters,
-                order
+                page: cursor.page + 1,
+                order: cursor.order
             }
         }).then(res => {
             setDbState(prev => ({...prev,
                 loading: false,
-                submissions: res.data
+                submissions: res.data.results,
+                total: res.data.count
             }));
         }).catch(error => {
             setDbState(prev => ({...prev,
@@ -52,16 +59,25 @@ export default function Dashboard() {
             loading: true
         }));
         
-    }, [filters, order]);
+    }, [filters, cursor]);
 
     return (
         <Container maxWidth="lg">
+            <div className={classes.appBarSpacer} />
             <Grid container spacing={3}>
                 <Grid item xs={12}>
                     <DashboardFilters loading={dbState.loading} filters={filters} setFilters={setFilters} />
                 </Grid>
                 <Grid item xs={12}>
-                    <SubmissionTable loading={dbState.loading} submissions={dbState.submissions} selected={selected} setSelected={setSelected} order={order} setOrder={setOrder}/>
+                    <SubmissionTable
+                        loading={dbState.loading}
+                        submissions={dbState.submissions}
+                        selected={selected}
+                        setSelected={setSelected}
+                        cursor={cursor}
+                        setCursor={setCursor}
+                        total={dbState.total}
+                    />
                 </Grid>
                 <Grid item xs={12}>
                     <MessageSender selected={selected} />

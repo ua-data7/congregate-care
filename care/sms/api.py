@@ -18,8 +18,10 @@ from django.http import HttpResponse
 from rest_framework import viewsets, permissions, generics
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from twilio.rest import TwilioException
 import pytz
+
 
 
 class QualtricsFormUpdateWebhookAPIView(generics.CreateAPIView):
@@ -171,10 +173,14 @@ class TwilioConversationReplyAPIView(generics.CreateAPIView):
             return Response(e, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class CustomPagination(PageNumberPagination):
+    page_size = 10
+
 
 class FacilityList(generics.ListAPIView):
     serializer_class = serializers.FacilitySerializer
     permission_classes = (permissions.IsAuthenticated,)
+    pagination_class = CustomPagination
     
     def get_queryset(self):
         params = self.request.query_params
@@ -199,6 +205,7 @@ class FacilityList(generics.ListAPIView):
 class QualtricsSubmissionList(generics.ListAPIView):
     serializer_class = serializers.QualtricsSubmissionSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    pagination_class = CustomPagination
     
     def get_queryset(self):
         params = self.request.query_params

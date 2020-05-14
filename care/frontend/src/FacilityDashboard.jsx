@@ -9,11 +9,12 @@ import FacilityTable from './FacilityTable';
 import DashboardFilters from './DashboardFilters';
 import MessageSender from './MessageSender';
 
-export default function Dashboard() {
+export default function Dashboard({classes}) {
     const [dbState, setDbState] = React.useState({
         loading: true,
         error: false,
         facilities: [],
+        total: 0,
         filters: {}
     });
 
@@ -27,19 +28,25 @@ export default function Dashboard() {
         size: null
     });
 
+    const [cursor, setCursor] = React.useState({
+        order: 'created_date',
+        page: 0
+    });
+
     const [selected, setSelected] = React.useState([]);
-    const [order, setOrder] = React.useState('created_date');
 
     React.useEffect(() => {
         axios.get('/api/facilities', {
             params: {
                 ...filters,
-                order
+                page: cursor.page + 1,
+                order: cursor.order
             }
         }).then(res => {
             setDbState(prev => ({...prev,
                 loading: false,
-                facilities: res.data
+                facilities: res.data.results,
+                total: res.data.count
             }));
         }).catch(error => {
             setDbState(prev => ({...prev,
@@ -52,10 +59,11 @@ export default function Dashboard() {
             loading: true
         }));
         
-    }, [filters, order]);
+    }, [filters, cursor]);
 
     return (
         <Container maxWidth="lg">
+            <div className={classes.appBarSpacer} />
             <Grid container spacing={3}>
                 <Grid item xs={12}>
                     <DashboardFilters loading={dbState.loading} filters={filters} setFilters={setFilters} />
@@ -64,10 +72,11 @@ export default function Dashboard() {
                     <FacilityTable
                         loading={dbState.loading}
                         facilities={dbState.facilities}
+                        total={dbState.total}
+                        cursor={cursor}
+                        setCursor={setCursor}
                         selected={selected}
                         setSelected={setSelected}
-                        order={order}
-                        setOrder={setOrder}
                     />
                 </Grid>
                 <Grid item xs={12}>

@@ -1,13 +1,13 @@
 import React from 'react';
 
 import {
-    Typography, Toolbar,
+    Typography, Toolbar, TablePagination,
     Checkbox, TableContainer, Table, TableHead,
     TableBody, TableRow, TableCell,
     Paper, TableSortLabel
 } from '@material-ui/core';
 
-export default function SubmissionTable({submissions, selected, setSelected, order, setOrder}) {
+export default function SubmissionTable({submissions, selected, setSelected, cursor, setCursor, total}) {
     function handleClick (id) {
         let selectedIndex = selected.indexOf(id);
         let newSelected = [];
@@ -28,15 +28,27 @@ export default function SubmissionTable({submissions, selected, setSelected, ord
     }
 
     function handleSort(key) {
-        if (order.indexOf(key) !== -1) {
-            if (order.charAt(0) === '-') {
-                setOrder(key);
+        if (cursor.order.indexOf(key) !== -1) {
+            if (cursor.order.charAt(0) === '-') {
+                setCursor(prev => ({...prev,
+                    order: key
+                }));
             } else {
-                setOrder('-' + key);
+                setCursor(prev => ({...prev,
+                    order: '-' + key
+                }));
             }
         } else {
-            setOrder(key);
+            setCursor(prev => ({...prev,
+                order: key
+            }));
         }
+    }
+
+    function handleChangePage(event, page) {
+        setCursor(prev => ({
+            ...prev, page
+        }));
     }
 
     let sortKeys = [
@@ -75,8 +87,8 @@ export default function SubmissionTable({submissions, selected, setSelected, ord
                             {sortKeys.map(sortKey => (
                                 <TableCell key={sortKey.key}>
                                     <TableSortLabel
-                                        active={order.indexOf(sortKey.key) !== -1}
-                                        direction={order.charAt(0) === '-' ? 'desc' : 'asc'}
+                                        active={cursor.order.indexOf(sortKey.key) !== -1}
+                                        direction={cursor.order.charAt(0) === '-' ? 'desc' : 'asc'}
                                         onClick={() => handleSort(sortKey.key)}
                                     >
                                         {sortKey.label}
@@ -102,22 +114,20 @@ export default function SubmissionTable({submissions, selected, setSelected, ord
                                 <TableCell>{row.facility.address}</TableCell>
                                 <TableCell>{row.facility.phones}</TableCell>
                                 <TableCell>{row.facility.emails}</TableCell>
-                                <TableCell>{row.created_date}</TableCell>
+                                <TableCell>{row.created_date || 'Never'}</TableCell>
                             </TableRow>
                         )))}
                     </TableBody>
                 </Table>
             </TableContainer>
-        {/*
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onChangePage={handleChangePage}
-          onChangeRowsPerPage={handleChangeRowsPerPage}
-        /> */}
+            <TablePagination
+                component="div"
+                count={total}
+                rowsPerPage={10}
+                page={cursor.page}
+                onChangePage={handleChangePage}
+                rowsPerPageOptions={[]}
+            />
         </Paper>
     );
 }
