@@ -71,6 +71,9 @@ class TwilioConversationSerializer(serializers.ModelSerializer):
 
 
 class FacilitySerializer(serializers.ModelSerializer):
+    last_upload_date = serializers.DateTimeField(format=r'%m/%d/%Y')
+    last_message_date = serializers.DateTimeField(format=r'%m/%d/%Y')
+
     class Meta:
         model = Facility
         fields = '__all__'

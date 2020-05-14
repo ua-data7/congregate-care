@@ -22,16 +22,16 @@ function DateInput(props) {
 export default function DashboardFilters({filters, setFilters, loading}) {
 
     let liasons = [
-        'Deb Agristo',
-        'Allison Burnett',
-        'Janet Corley',
-        'Kat Davis',
-        'Gabby Flores',
-        'Emerson Kuhn',
-        'Lisa Longo',
-        'Said Martinez',
-        'Melody Mena',
-        'Justin Tantoon',
+        'Deb',
+        'Allison',
+        'Janet',
+        'Kat',
+        'Gabby',
+        'Emerson',
+        'Lisa',
+        'Said',
+        'Melody',
+        'Justin',
         'Clementina'
     ];
 

@@ -55,7 +55,7 @@ export default function Dashboard() {
                         {page.title}
                     </Typography>
                 </Toolbar>
-            </AppBar>
+            </AppBar>            
             <Drawer
                 className={classes.drawer}
                 variant="permanent"
@@ -75,7 +75,7 @@ export default function Dashboard() {
                 </div>
             </Drawer>
             <div className={classes.appBarSpacer} />
-            <page.component />
+            <page.component classes={classes}/>
         </div>
     );
 }
