@@ -81,7 +81,8 @@ export default function FacilityTable({facilities, selected, setSelected, total,
     return (
         <Paper>
             <Toolbar>
-                <Typography variant="h6" component="h2">Facilities</Typography>
+                <Typography variant="h6" component="h2" display="block">Facilities</Typography>
+                <Typography variant="subtitle1" component="p" style={{marginLeft: '50px'}}>Click on a column header to resort.</Typography>
             </Toolbar>
             <TableContainer>
                 <Table>

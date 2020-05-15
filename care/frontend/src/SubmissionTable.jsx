@@ -69,7 +69,7 @@ export default function SubmissionTable({submissions, selected, setSelected, cur
             key: 'facility__emails'
         },
         {
-            label: 'End Date',
+            label: 'Upload Date',
             key: 'created_date'
         }
     ];
@@ -78,6 +78,7 @@ export default function SubmissionTable({submissions, selected, setSelected, cur
         <Paper>
             <Toolbar>
                 <Typography variant="h6" component="h2">Submissions</Typography>
+                <Typography variant="subtitle1" component="p" style={{marginLeft: '50px'}}>Click on a column header to resort.</Typography>
             </Toolbar>
             <TableContainer>
                 <Table>
