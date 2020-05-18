@@ -41,8 +41,39 @@ export default function DashboardFilters({filters, setFilters, loading}) {
                 <Typography variant="h6" component="h2">Filters</Typography>
             </Toolbar>
             <Toolbar>
-                <Grid item xs={1}>
-                    <Typography>Date range:</Typography>
+                <Grid item xs={2}>
+                    <Typography>Liason:</Typography>
+                </Grid>
+                <Grid item xs={3}>
+                    <FormControl style={{minWidth: '150px', maxWidth: '250px'}}>
+                        <InputLabel id="liason-label">Liason</InputLabel>
+                        <Select
+                            labelId="liason-label"
+                            multiple
+                            value={filters.liasons}
+                            onChange={event => {
+                                let liasons = event.target.value;    
+                                setFilters(prev => ({
+                                    ...prev,
+                                    liasons: liasons || []
+                                }));
+                            }}
+                            input={<Input />}
+                            renderValue={(selected) => selected.join(', ')}
+                        >
+                        {liasons.map((liason) => (
+                            <MenuItem key={liason} value={liason}>
+                                <Checkbox checked={filters.liasons.indexOf(liason) !== -1} />
+                                {liason}
+                            </MenuItem>
+                        ))}
+                        </Select>
+                    </FormControl>
+                </Grid>
+            </Toolbar>
+            <Toolbar>
+                <Grid item xs={2}>
+                    <Typography>Submission date:</Typography>
                 </Grid>
                 <Grid item xs={2}>
                     <Input
@@ -83,32 +114,46 @@ export default function DashboardFilters({filters, setFilters, loading}) {
                 </Grid>
             </Toolbar>
             <Toolbar>
-                <Grid item xs={1}>
-                    <Typography>Filter:</Typography>
+                <Grid item xs={2}>
+                    <Typography>Facility type:</Typography>
                 </Grid>
                 <Grid item xs={3}>
                     <FormControl style={{minWidth: '150px', maxWidth: '250px'}}>
-                        <InputLabel id="liason-label">Liason</InputLabel>
                         <Select
-                            labelId="liason-label"
-                            multiple
-                            value={filters.liasons}
+                            labelId="category-label"
+                            value={filters.category}
                             onChange={event => {
-                                let liasons = event.target.value;    
+                                let cat = event.target.value;
                                 setFilters(prev => ({
                                     ...prev,
-                                    liasons: liasons || null
+                                    category: cat
                                 }));
                             }}
                             input={<Input />}
-                            renderValue={(selected) => selected.join(', ')}
                         >
-                        {liasons.map((liason) => (
-                            <MenuItem key={liason} value={liason}>
-                                <Checkbox checked={filters.liasons.indexOf(liason) !== -1} />
-                                {liason}
-                            </MenuItem>
-                        ))}
+                            <MenuItem value="all">All Categories</MenuItem>
+                            <MenuItem value="cluster">Cluster</MenuItem>
+                            <MenuItem value="noncluster">Non-Cluster</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Grid>
+                <Grid item xs={3}>
+                    <FormControl style={{minWidth: '150px', maxWidth: '250px'}}>
+                        <Select
+                            labelId="size-label"
+                            value={filters.size}
+                            onChange={event => {
+                                let size = event.target.value;
+                                setFilters(prev => ({
+                                    ...prev,
+                                    size: size
+                                }));
+                            }}
+                            input={<Input />}
+                        >
+                            <MenuItem value="all">All Sizes</MenuItem>
+                            <MenuItem value="small">Small</MenuItem>
+                            <MenuItem value="large">Large</MenuItem>
                         </Select>
                     </FormControl>
                 </Grid>
@@ -126,27 +171,11 @@ export default function DashboardFilters({filters, setFilters, loading}) {
                             name="newCases"
                             disabled={loading} 
                         />}
-                        label="New Cases"
-                    />
-                </Grid>
-                <Grid item xs={2}>
-                    <FormControlLabel
-                        control={<Checkbox
-                            checked={filters.cluster}
-                            onChange={event => {
-                                let checked = event.target.checked;
-                                setFilters(prev => ({
-                                    ...prev,
-                                    cluster: checked
-                                }));
-                            }}
-                            name="cluster"
-                            disabled={loading} 
-                        />}
-                        label="Cluster"
+                        label="Reporting New Cases"
                     />
                 </Grid>
             </Toolbar>
+            
         </Paper>
     );
 }

@@ -22,10 +22,9 @@ export default function SubmissionDashboard({classes}) {
         minDate: null,
         maxDate: null,
         newCases: false,
-        cluster: false,
-        reportedAfter: null,
-        liasons: [],
-        size: null
+        category: 'all',
+        size: 'all',
+        liasons: []
     });
 
     const [cursor, setCursor] = React.useState({

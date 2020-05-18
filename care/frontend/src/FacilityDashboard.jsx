@@ -22,14 +22,13 @@ export default function Dashboard({classes}) {
         minDate: null,
         maxDate: null,
         newCases: false,
-        cluster: false,
-        reportedAfter: null,
-        liasons: [],
-        size: null
+        category: 'all',
+        size: 'all',
+        liasons: []
     });
 
     const [cursor, setCursor] = React.useState({
-        order: 'created_date',
+        order: 'name',
         page: 0
     });
 
@@ -66,7 +65,11 @@ export default function Dashboard({classes}) {
             <div className={classes.appBarSpacer} />
             <Grid container spacing={3}>
                 <Grid item xs={12}>
-                    <DashboardFilters loading={dbState.loading} filters={filters} setFilters={setFilters} />
+                    <DashboardFilters
+                        loading={dbState.loading}
+                        filters={filters}
+                        setFilters={setFilters}
+                    />
                 </Grid>
                 <Grid item xs={12}>
                     <FacilityTable
