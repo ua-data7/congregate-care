@@ -69,6 +69,10 @@ export default function SubmissionTable({submissions, selected, setSelected, cur
             key: 'facility__emails'
         },
         {
+            label: 'New Cases?',
+            key: 'reported_new_cases'
+        },
+        {
             label: 'Upload Date',
             key: 'created_date'
         }
@@ -115,6 +119,7 @@ export default function SubmissionTable({submissions, selected, setSelected, cur
                                 <TableCell>{row.facility.address}</TableCell>
                                 <TableCell>{row.facility.phones}</TableCell>
                                 <TableCell>{row.facility.emails}</TableCell>
+                                <TableCell>{row.reported_new_cases ? 'Yes' : 'No'}</TableCell>
                                 <TableCell>{row.created_date || 'Never'}</TableCell>
                             </TableRow>
                         )))}
