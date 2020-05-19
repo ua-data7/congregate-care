@@ -20,9 +20,18 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         az_now = pytz.timezone('America/Phoenix').localize(pytz.datetime.datetime.now())
         for facility in Facility.objects.filter(cluster=False):
-            email_message = NON_CLUSTER_WEEKLY_TPL['email'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
-            sms_message = NON_CLUSTER_WEEKLY_TPL['sms'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
-            send_email_message(facility.identity, NON_CLUSTER_WEEKLY_TPL['subject'], email_message, bulk=False, attachment_filename=attachment_filename, attachment_content=attachment_content, attachment_mimetype=attachment_mimetype)
-            send_sms_message(facility.identity, sms_message, bulk=False)
-            facility.last_message_date = az_now
-            facility.save()
+            do_message = False
+            if facility.last_upload_date is not None:
+                delta_since_last_upload = az_now - facility.last_upload_date
+                if delta_since_last_upload.days > 6:
+                    # send them a message.
+                    do_message = True
+            else:
+                do_message = True
+            if do_message:
+                email_message = NON_CLUSTER_WEEKLY_TPL['email'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
+                sms_message = NON_CLUSTER_WEEKLY_TPL['sms'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
+                send_email_message(facility.identity, NON_CLUSTER_WEEKLY_TPL['subject'], email_message, bulk=False, attachment_filename=attachment_filename, attachment_content=attachment_content, attachment_mimetype=attachment_mimetype)
+                send_sms_message(facility.identity, sms_message, bulk=False)
+                facility.last_message_date = az_now
+                facility.save()
