@@ -20,7 +20,13 @@ This is only needed for deployment, can be safely ignored if using local.py inst
 
 Where the Django git repo lives as DJANGO_SRC_NAME
 
-So to start: `git clone git@bitbucket.org:BCF_ARL/ncov19-django.git /var/webapps/<PROJECT_NAME>-<DEPLOY_TYPE>/<DJANGO_SRC_NAME>`
+So to start: `git clone git@github.com:ua-data7/congregate-care.git /var/webapps/<PROJECT_NAME>-<DEPLOY_TYPE>/<DJANGO_SRC_NAME>`
+
+Copy SMS Templates
+```
+git clone git@bitbucket.org:BCF_ARL/ccare-private-data.git /var/webapps/<PROJECT_NAME>-<DEPLOY_TYPE>/sms_msg_templates
+ln -s /var/webapps/<PROJECT_NAME>-<DEPLOY_TYPE>/sms_msg_templates /var/webapps/<PROJECT_NAME>-<DEPLOY_TYPE>/<DJANGO_SRC_NAME>/care/templates/messages
+```
 
 Next, copy the example.env up one directory from django source i.e.
 `cp example.env ../.env`
