@@ -2,6 +2,7 @@ from rest_framework import serializers
 from care.sms.models import TwilioConversation
 from care.sms.models import TwilioMessage
 from care.sms.models import Facility
+from care.sms.models import Binding
 
 
 class FacilitySerializer(serializers.ModelSerializer):
@@ -24,6 +25,18 @@ class FacilitySerializer(serializers.ModelSerializer):
             'last_upload_date',
             'last_modified',
             'created_date',
+        )
+
+
+class BindingSerializer(serializers.ModelSerializer):
+    facility = FacilitySerializer(read_only=True)
+
+    class Meta:
+        model = Binding
+        fields = (
+            'facility',
+            'binding_sid',
+            'address',
         )
 
 
