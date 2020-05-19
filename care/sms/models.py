@@ -8,10 +8,10 @@ from django.conf import settings
 import pytz
 
 
-class PreferredContactType(models.TextChoices):
-    EMAIL = 'email'
-    SMS = 'sms'
-    VOICE = 'voice'
+def get_uuid(length=10):
+    uid = shortuuid.ShortUUID()
+    uid.set_alphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+    return uid.random(length=length)
 
 
 class Facility(models.Model):
@@ -23,22 +23,26 @@ class Facility(models.Model):
     liasons = models.CharField(max_length=255, blank=True, null=True)
     emails = models.TextField(blank=True, null=True)
     phones = models.TextField(blank=True, null=True)
-    preferred_contact = models.CharField(
-        max_length=10,
-        choices=PreferredContactType.choices,
-        default=PreferredContactType.SMS
-    )
     tags = TaggableManager(blank=True) # used for facility type/etc.
     reporting_new_cases = models.BooleanField(default=False)
     last_new_cases_reported = models.IntegerField(default=0)
     last_upload_date = models.DateTimeField(blank=True, null=True)
     last_message_date = models.DateTimeField(blank=True, null=True)
+    last_message_open_date = models.DateTimeField(blank=True, null=True)
     last_modified = models.DateTimeField(auto_now=True)
     created_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Facility"
         verbose_name_plural = "Facilities"
+
+    # hopefully this is safe...
+    def save(self, *args, **kwargs):
+        # new instance, insert a UUID if one is not provided in kwargs
+        if not self.pk:
+            if 'identity' not in kwargs:
+                self.identity = get_uuid()
+        super(Facility, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.name
@@ -63,8 +67,18 @@ class Binding(models.Model):
         choices=BindingType.choices,
         default=BindingType.SMS
     )
-    address = models.CharField(max_length=255) # initially going to be phone number for SMS addresses
+    opt_out = models.BooleanField(default=False)
+    address = models.CharField(max_length=255, help_text='Phone number, e.g. +15205551234') # initially going to be phone number for SMS addresses
     facility = models.ForeignKey(Facility, on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        # create the actual twilio binding reflected by this object.
+        # deletion of the twilio binding occurs in signals.py
+        if not self.pk:
+            binding = twilio_client.notify.services(settings.TWILIO_NOTIFICATION_SERVICE_SID).bindings.create(identity=self.facility.identity, binding_type=self.binding_type, address=self.address)
+            self.binding_sid = binding.sid
+            self.service_sid = binding.service_sid
+        super(Binding, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return f'{self.facility.name} - {self.address}'
@@ -72,11 +86,9 @@ class Binding(models.Model):
     def __str__(self):
         return f'{self.facility.name} - {self.address}'
 
-
-def get_uuid(length=10):
-    uid = shortuuid.ShortUUID()
-    uid.set_alphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
-    return uid.random(length=length)
+    class Meta:
+        verbose_name = "SMS Number"
+        verbose_name_plural = "SMS Numbers"
 
 
 class QualtricsSubmission(models.Model):
@@ -123,28 +135,6 @@ class TwilioMessage(models.Model):
     def __str__(self):
         return f'{self.conversation} - {self.index}'
 
-# Facility will have to exist prior to the binding for its SMS numbers being created.
-def create_binding(uuid, address, binding_type='sms'):
-    if not address:
-        raise ValueError('address is a required parameter.')
-    if not uuid:
-        raise ValueError('uuid is a required parameter.')
-    if not Binding.objects.filter(address=address).exists():
-        with transaction.atomic():
-            binding = twilio_client.notify.services(settings.TWILIO_NOTIFICATION_SERVICE_SID).bindings.create(identity=uuid, binding_type=binding_type, address=address)
-            facility = Facility.objects.get(identity=uuid)
-            Binding.objects.create(
-                service_sid=settings.TWILIO_NOTIFICATION_SERVICE_SID,
-                address=address,
-                binding_type=binding_type,
-                facility=facility,
-                binding_sid=binding.sid,
-            )
-            return uuid
-    else:
-        # a Binding with the given address already exists.
-        raise IntegrityError('A binding for this address already exists.')
-
 
 def send_sms_message(uuid, message, bulk=False):
     if bulk:
@@ -162,7 +152,8 @@ def send_sms_message(uuid, message, bulk=False):
         )
 
 
-def send_email_message(uuid, subject, message, bulk=False):
+def send_email_message(uuid, subject, message, attachment_filename=None, attachment_content=None, attachment_mimetype=None, bulk=False):
+    email_message = None
     if bulk:
         email_facilities = list(Facility.objects.filter(identity__in=uuid).values_list('emails', flat=True))
         if len(email_users) > 0:
@@ -170,14 +161,16 @@ def send_email_message(uuid, subject, message, bulk=False):
             for facility in email_facilities:
                 for email in facility.split(','):
                     emails.append(email)
-            # subject, message, from, to, to_cc, to_bcc, 
-            email_message = EmailMessage(subject, message, settings.SENDGRID_FROM_EMAIL, emails[0], None, emails[1:])
-            email_message.send()
+            # subject, message, from, to, to_cc, to_bcc,
+            email_message = EmailMessage(subject, message, settings.SENDGRID_FROM_EMAIL, [emails[0]], None, emails[1:], reply_to=settings.SENDGRID_REPLY_TO_EMAIL)
     else:
         facility = Facility.objects.get(identity=uuid)
         emails = facility.emails.split(',')
         if len(emails) > 1:
-            email_message = EmailMessage(subject, message, settings.SENDGRID_FROM_EMAIL, emails[0], None, emails[1:])
+            email_message = EmailMessage(subject, message, settings.SENDGRID_FROM_EMAIL, [emails[0]], None, emails[1:], reply_to=settings.SENDGRID_REPLY_TO_EMAIL)
         else:
-            email_message = EmailMessage(subject, message, settings.SENDGRID_FROM_EMAIL, emails[0])
+            email_message = EmailMessage(subject, message, settings.SENDGRID_FROM_EMAIL, [emails[0]], reply_to=settings.SENDGRID_REPLY_TO_EMAIL)
+    if email_message:
+        if attachment_filename is not None and attachment_content is not None and attachment_mimetype is not None:
+            email_message.attach(attachment_filename, attachment_content, attachment_mimetype)
         email_message.send()

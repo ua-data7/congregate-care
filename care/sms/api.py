@@ -42,6 +42,10 @@ class QualtricsFormUpdateWebhookAPIView(generics.CreateAPIView):
             new_cases = request.data.get('new_cases', None)
             if new_cases is None:
                 new_cases = 0
+            else:
+                # facility will always be cluster if at any point there are new cases
+                # this will not reverse if they report no new cases in a given submission
+                facility.cluster = True
             facility.last_new_cases_reported = new_cases
             if filename and len(filename) > 0:
                 facility.last_upload_date = az_now
@@ -99,6 +103,12 @@ class TwilioConversationCallbackAPIView(generics.CreateAPIView):
                 facility=facility,
                 author_sid=participant_sid,
             )
+            if 'pause' in body.lower() and binding is not None:
+                binding.opt_out = True
+                binding.save()
+            elif 'resume' in body.lower() and binding is not None:
+                binding.opt_out = False
+                binding.save()
         return Response(status=status.HTTP_200_OK)
 
 
