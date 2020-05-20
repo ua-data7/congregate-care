@@ -152,8 +152,8 @@ export default function DashboardFilters({filters, setFilters, loading}) {
                             input={<Input />}
                         >
                             <MenuItem value="all">All Sizes</MenuItem>
-                            <MenuItem value="small">Small</MenuItem>
-                            <MenuItem value="large">Large</MenuItem>
+                            <MenuItem value="Small">Small</MenuItem>
+                            <MenuItem value="Large">Large</MenuItem>
                         </Select>
                     </FormControl>
                 </Grid>

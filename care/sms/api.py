@@ -1,7 +1,7 @@
 from django.conf import settings
 import requests
 import datetime
-from rest_framework import viewsets, permissions, generics
+from rest_framework import viewsets, permissions, generics, views
 from rest_framework.response import Response
 from care.sms.models import QualtricsSubmission
 from care.sms.models import TwilioConversation
@@ -177,6 +177,39 @@ class CustomPagination(PageNumberPagination):
     page_size = 10
 
 
+
+def filter_facilities(queryset, filters):
+    if 'minDate' in filters or 'maxDate' in filters:
+        subs = QualtricsSubmission.objects
+        if 'minDate' in filters:
+            parsed_date = datetime.datetime.strptime(filters['minDate'], r'%m/%d/%Y')
+            subs = subs.filter(created_date__gte=parsed_date)
+
+        if 'maxDate' in filters:
+            parsed_date = datetime.datetime.strptime(filters['maxDate'], r'%m/%d/%Y')
+            subs = subs.filter(created_date__lt=parsed_date + datetime.timedelta(days=1))
+
+        queryset = queryset.filter(id__in=subs.values('facility'))
+
+    if 'newCases' in filters and filters['newCases'] == 'true':
+        queryset = queryset.filter(reporting_new_cases=True)
+    
+    if 'category' in filters:
+        if filters['category'] == 'cluster':
+            queryset = queryset.filter(cluster=True)
+        elif filters['category'] == 'noncluster':
+            queryset = queryset.filter(cluster=False)
+
+    if 'size' in filters and filters['size'] != 'all':
+        queryset = queryset.filter(facility_size=filters['size'])
+
+    liasons = filters.getlist('liasons[]')
+    if len(liasons):
+        queryset = queryset.filter(liasons__in=liasons)
+
+    return queryset
+
+
 class FacilityList(generics.ListAPIView):
     serializer_class = serializers.FacilitySerializer
     permission_classes = (permissions.IsAuthenticated,)
@@ -184,22 +217,21 @@ class FacilityList(generics.ListAPIView):
     
     def get_queryset(self):
         params = self.request.query_params
-        queryset = Facility.objects.all()
-
-        if 'newCases' in params and params['newCases'] == 'true':
-            queryset = queryset.filter(reporting_new_cases=True)
-
-        if 'cluster' in params and params['cluster'] == 'true':
-            queryset = queryset.filter(cluster=True)
-
-        liasons = params.getlist('liasons[]')
-        if len(liasons):
-            queryset = queryset.filter(liasons__in=liasons)
+        queryset = filter_facilities(Facility.objects.all(), params)
 
         if 'order' in params:
             queryset = queryset.order_by(params['order'])
 
         return queryset
+
+
+class GetFacilityEmails(generics.ListAPIView):
+    serializer_class = serializers.FacilityEmailSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    
+    def get_queryset(self):
+        params = self.request.query_params
+        return filter_facilities(Facility.objects.all(), params)
 
 
 class QualtricsSubmissionList(generics.ListAPIView):
@@ -217,21 +249,23 @@ class QualtricsSubmissionList(generics.ListAPIView):
 
         if 'maxDate' in params:
             parsed_date = datetime.datetime.strptime(params['maxDate'], r'%m/%d/%Y')
-            
             queryset = queryset.filter(created_date__lt=parsed_date + datetime.timedelta(days=1))
 
         if 'newCases' in params and params['newCases'] == 'true':
-            queryset = queryset.filter(reported_new_cases=True)
+            queryset = queryset.filter(reporting_new_cases=True)
+    
+        if 'category' in params:
+            if params['category'] == 'cluster':
+                queryset = queryset.filter(facility__cluster=True)
+            elif params['category'] == 'noncluster':
+                queryset = queryset.filter(facility__cluster=False)
 
-        if 'cluster' in params and params['cluster'] == 'true':
-            queryset = queryset.filter(facility__cluster=True)
-
-        if 'liason' in params and params['liason']:
-            queryset = queryset.filter(facility__liason=params['liason'])
+        if 'size' in params and params['size'] != 'all':
+            queryset = queryset.filter(facility__facility_size=params['size'])
 
         liasons = params.getlist('liasons[]')
         if len(liasons):
-            queryset = queryset.filter(facility__liasons__in=liasons)
+            queryset = queryset.filter(liasons__in=liasons)
 
         if 'order' in params:
             queryset = queryset.order_by(params['order'])
