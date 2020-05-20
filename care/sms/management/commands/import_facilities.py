@@ -15,7 +15,7 @@ from care.sms.models import get_uuid
 # Liaison Name, 10
 # Cluster/NC, 11
 class Command(BaseCommand):
-    help = 'Import Facilities from Facility Liason List Excel file.'
+    help = 'Import Facilities from Facility Liason List Excel file. THIS WILL DELETE ALL EXISTING FACILITIES.'
     def add_arguments(self, parser):
         parser.add_argument('path', type=str)
     def handle(self, *args, **options):
@@ -25,14 +25,6 @@ class Command(BaseCommand):
         rows = 0
         for row in ws1:
             if rows > 0:
-                # name
-                # facility_size
-                # cluster
-                # address
-                # liason_uuid
-                # emails
-                # phones
-                # tags
                 phones = ', '.join(row[2].value.split(';'))
                 if row[4].value: emails = ', '.join(row[4].value.split(';'))
                 else: emails = ''
@@ -41,6 +33,7 @@ class Command(BaseCommand):
                 apartments = row[7].value.lower() == 'yes'
                 other = row[8].value.lower() == 'yes'
                 cluster = row[11].value.lower() == 'cluster'
+                size = row[9].value
                 liason_name = row[10].value
                 uuid = get_uuid()
                 facility = Facility.objects.create(
@@ -50,6 +43,7 @@ class Command(BaseCommand):
                     emails=emails,
                     phones=phones,
                     cluster=cluster,
+                    facility_size=size,
                     liasons=liason_name,
                 )
                 if apartments:
