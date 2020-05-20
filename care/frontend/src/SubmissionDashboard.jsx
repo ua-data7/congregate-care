@@ -78,9 +78,6 @@ export default function SubmissionDashboard({classes}) {
                         total={dbState.total}
                     />
                 </Grid>
-                <Grid item xs={12}>
-                    <MessageSender selected={selected} />
-                </Grid>
             </Grid>
         </Container>
     );
