@@ -12,7 +12,11 @@ def remove_binding(sender, instance, **kwargs):
 
 @receiver(pre_save, sender=Binding)
 def opt_out_binding(sender, instance, **kwargs):
-    real_obj = Binding.objects.get(id=instance.pk)
+    try:
+        real_obj = Binding.objects.get(id=instance.pk)
+    except Binding.DoesNotExist:
+        # new binding or non-existing binding, so change detection doesn't make sense.
+        return
     if not real_obj.opt_out and instance.opt_out:
         # this binding is opting out. delete the binding from twilio
         twilio_client.notify.services(settings.TWILIO_NOTIFICATION_SERVICE_SID).bindings(instance.binding_sid).delete()
