@@ -1,30 +1,55 @@
 import React from 'react';
+import axios from 'axios';
 
 import {
-    Typography, Toolbar, TablePagination,
+    Typography, Toolbar, TablePagination, Dialog,
     Checkbox, TableContainer, Table, TableHead,
-    TableBody, TableRow, TableCell,
+    TableBody, TableRow, TableCell, Button,
     Paper, TableSortLabel
 } from '@material-ui/core';
 
-export default function SubmissionTable({submissions, selected, setSelected, cursor, setCursor, total}) {
-    function handleClick (id) {
-        let selectedIndex = selected.indexOf(id);
-        let newSelected = [];
+import MessageSender from './MessageSender';
+
+export default function SubmissionTable({submissions, total, cursor, setCursor, filters}) {
+
+    const [selected, setSelected] = React.useState([]);
+    const [recipients, setRecipients] = React.useState([]);
+    const [modalOpen, setModalOpen] = React.useState(false);
+    const closeModal = () => setModalOpen(false);
+
+    function messageAll() {
+        axios.get('/api/emails', {
+            params: {
+                ...filters
+            }
+        }).then(res => {
+            setRecipients(res.data);
+            setModalOpen(true);
+        });
+    }
+
+    function messageSelected() {
+        setRecipients(selected);
+        setModalOpen(true);
+    }
     
-        if (selectedIndex === -1) {
-            newSelected = newSelected.concat(selected, id);
-        } else if (selectedIndex === 0) {
-            newSelected = newSelected.concat(selected.slice(1));
-        } else if (selectedIndex === selected.length - 1) {
-            newSelected = newSelected.concat(selected.slice(0, -1));
-        } else if (selectedIndex > 0) {
-            newSelected = newSelected.concat(
-                selected.slice(0, selectedIndex),
-                selected.slice(selectedIndex + 1),
-            );
+    function selectedIndex(facility) {
+        for (let i = 0; i < selected.length; i++) {
+            if (facility.id === selected[i].id) return i;
         }
-        setSelected(newSelected);
+        return -1;
+    }
+
+    function select(facility) {
+        let index = selectedIndex(facility)
+        if (index === -1) {
+            setSelected(selected.concat([facility]));
+        } else {
+            setSelected(
+                selected.slice(0, index)
+                .concat(selected.slice(index + 1))
+            )
+        }
     }
 
     function handleSort(key) {
@@ -81,8 +106,12 @@ export default function SubmissionTable({submissions, selected, setSelected, cur
     return (
         <Paper>
             <Toolbar>
-                <Typography variant="h6" component="h2">Submissions</Typography>
-                <Typography variant="subtitle1" component="p" style={{marginLeft: '50px'}}>Click on a column header to resort.</Typography>
+                <Typography variant="h6" component="h2" display="block">Submissions</Typography>
+                <Typography style={{flexGrow: 1, marginLeft: '50px'}} variant="subtitle1" component="p">Click on a column header to resort.</Typography>
+                { selected.length > 0 &&
+                    <Button style={{marginRight: '20px'}} variant="contained" color="secondary" onClick={messageSelected}>Message selected</Button>
+                }
+                <Button variant="contained" color="secondary" onClick={messageAll}>Message all</Button>
             </Toolbar>
             <TableContainer>
                 <Table>
@@ -106,14 +135,14 @@ export default function SubmissionTable({submissions, selected, setSelected, cur
                         {submissions.map(row => ((
                             <TableRow
                                 hover
-                                onClick={() => handleClick(row.id)}
+                                onClick={() => select(row.facility)}
                                 role="checkbox"
                                 tabIndex={-1}
                                 key={row.id}
-                                selected={selected.indexOf(row.id) !== -1}
+                                selected={selectedIndex(row.facility) !== -1}
                             >
                                 <TableCell padding="checkbox">
-                                    <Checkbox checked={selected.indexOf(row.id) !== -1}/>
+                                    <Checkbox checked={selectedIndex(row.facility) !== -1}/>
                                 </TableCell>
                                 <TableCell>{row.facility.name}</TableCell>
                                 <TableCell>{row.facility.address}</TableCell>
@@ -134,6 +163,9 @@ export default function SubmissionTable({submissions, selected, setSelected, cur
                 onChangePage={handleChangePage}
                 rowsPerPageOptions={[]}
             />
+            <Dialog open={modalOpen} onClose={closeModal}>
+                <MessageSender recipients={recipients} closeModal={closeModal}/>
+            </Dialog>
         </Paper>
     );
 }

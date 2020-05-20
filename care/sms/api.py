@@ -121,12 +121,10 @@ class TwilioConversationListAPIView(generics.ListAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
 
-class SendSMSMessageAPIView(generics.CreateAPIView):
-    queryset = Facility.objects.none()
-    serializer_class = serializers.FacilitySerializer
+class SendSMSMessageAPIView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
-    def create(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         bulk = request.data.get('bulk', False)
         message = request.data.get('message', None)
         if not message:
@@ -136,12 +134,10 @@ class SendSMSMessageAPIView(generics.CreateAPIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class SendEmailMessageAPIView(generics.CreateAPIView):
-    queryset = Facility.objects.none()
-    serializer_class = serializers.FacilitySerializer
+class SendEmailMessageAPIView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
-    def create(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         bulk = request.data.get('bulk', False)
         message = request.data.get('message', None)
         subject = request.data.get('subject', None)
@@ -150,7 +146,7 @@ class SendEmailMessageAPIView(generics.CreateAPIView):
         if not subject:
             return Response('subject is a required parameter', status=status.HTTP_400_BAD_REQUEST)
         uuid = request.data.get('uuid')
-        send_email_message(uuid, message, bulk=bulk)
+        send_email_message(uuid, subject, message, bulk=bulk)
         return Response(status=status.HTTP_200_OK)
 
 

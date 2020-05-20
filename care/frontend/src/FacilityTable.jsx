@@ -13,11 +13,7 @@ import MessageSender from './MessageSender';
 export default function FacilityTable({facilities, total, cursor, setCursor, filters}) {
 
     const [selected, setSelected] = React.useState([]);
-
-
     const [recipients, setRecipients] = React.useState([]);
-
-    const [emails, setEmails] = React.useState('');
     const [modalOpen, setModalOpen] = React.useState(false);
     const closeModal = () => setModalOpen(false);
 
@@ -136,8 +132,7 @@ export default function FacilityTable({facilities, total, cursor, setCursor, fil
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {facilities.map(facility => {
-                            return (
+                        {facilities.map(facility => ((
                                 <TableRow
                                     hover
                                     onClick={() => select(facility)}
@@ -157,7 +152,7 @@ export default function FacilityTable({facilities, total, cursor, setCursor, fil
                                     <TableCell>{facility.last_message_date || 'Never'}</TableCell>
                                 </TableRow>
                             )
-                        })}
+                        ))}
                     </TableBody>
                 </Table>
             </TableContainer>
@@ -169,11 +164,8 @@ export default function FacilityTable({facilities, total, cursor, setCursor, fil
                 onChangePage={handleChangePage}
                 rowsPerPageOptions={[]}
             />
-            <Dialog
-                open={modalOpen}
-                onClose={closeModal}
-            >
-                <MessageSender recipients={recipients} emails={emails} closeModal={closeModal}/>
+            <Dialog open={modalOpen} onClose={closeModal} >
+                <MessageSender recipients={recipients} closeModal={closeModal}/>
             </Dialog>
         </Paper>
     );
