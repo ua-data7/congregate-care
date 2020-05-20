@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from taggit.managers import TaggableManager
 from care.sms.twilio import twilio_client
 import shortuuid
@@ -160,16 +160,16 @@ def send_email_message(uuid, subject, message, attachment_filename=None, attachm
             emails = []
             for facility in email_facilities:
                 for email in facility.split(','):
-                    emails.append(email)
+                    emails.append(email.strip())
             # subject, message, from, to, to_cc, to_bcc,
-            email_message = EmailMessage(subject, message, settings.SENDGRID_FROM_EMAIL, [emails[0]], None, emails[1:], reply_to=[settings.SENDGRID_REPLY_TO_EMAIL])
+            email_message = EmailMultiAlternatives(subject, message, settings.SENDGRID_FROM_EMAIL, [emails[0]], None, emails[1:], reply_to=[settings.SENDGRID_REPLY_TO_EMAIL])
     else:
         facility = Facility.objects.get(identity=uuid)
         emails = facility.emails.split(',')
         if len(emails) > 1:
-            email_message = EmailMessage(subject, message, settings.SENDGRID_FROM_EMAIL, [emails[0]], None, emails[1:], reply_to=[settings.SENDGRID_REPLY_TO_EMAIL])
+            email_message = EmailMultiAlternatives(subject, message, settings.SENDGRID_FROM_EMAIL, [emails[0]], None, emails[1:], reply_to=[settings.SENDGRID_REPLY_TO_EMAIL])
         else:
-            email_message = EmailMessage(subject, message, settings.SENDGRID_FROM_EMAIL, [emails[0]], reply_to=[settings.SENDGRID_REPLY_TO_EMAIL])
+            email_message = EmailMultiAlternatives(subject, message, settings.SENDGRID_FROM_EMAIL, [emails[0]], reply_to=[settings.SENDGRID_REPLY_TO_EMAIL])
     if email_message:
         if attachment_filename is not None and attachment_content is not None and attachment_mimetype is not None:
             email_message.attach(attachment_filename, attachment_content, attachment_mimetype)
