@@ -6,6 +6,15 @@ from care.sms.models import Binding
 from care.sms.models import QualtricsSubmission
 
 
+class FacilityEmailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Facility
+        fields = (
+            'identity',
+            'emails'
+        )
+
+
 class FacilitySerializer(serializers.ModelSerializer):
 
     class Meta:
