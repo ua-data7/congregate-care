@@ -163,12 +163,14 @@ def send_email_message(uuid, subject, message, attachment_filename=None, attachm
                 for email in facility.split(','):
                     emails.append(email.strip())
             # subject, message, from, to, to_cc, to_bcc,
-            email_message = EmailMultiAlternatives(subject, message, settings.SENDGRID_FROM_EMAIL, [emails[0]], None, emails[1:], reply_to=[settings.SENDGRID_REPLY_TO_EMAIL])
+            email_message = EmailMultiAlternatives(subject, message, settings.SENDGRID_FROM_EMAIL, [emails[0]], emails[1:], reply_to=[settings.SENDGRID_REPLY_TO_EMAIL])
     else:
         facility = Facility.objects.get(identity=uuid)
-        emails = facility.emails.split(',')
+        emails = []
+        for email in facility.emails.split(','):
+            emails.append(email.strip())
         if len(emails) > 1:
-            email_message = EmailMultiAlternatives(subject, message, settings.SENDGRID_FROM_EMAIL, [emails[0]], None, emails[1:], reply_to=[settings.SENDGRID_REPLY_TO_EMAIL])
+            email_message = EmailMultiAlternatives(subject, message, settings.SENDGRID_FROM_EMAIL, [emails[0]], emails[1:], reply_to=[settings.SENDGRID_REPLY_TO_EMAIL])
         else:
             email_message = EmailMultiAlternatives(subject, message, settings.SENDGRID_FROM_EMAIL, [emails[0]], reply_to=[settings.SENDGRID_REPLY_TO_EMAIL])
     if email_message:
