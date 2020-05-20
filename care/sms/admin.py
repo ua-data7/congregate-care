@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from care.sms.models import EnrolledUser, Facility, QualtricsSubmission, Binding
+from care.sms.models import Facility, QualtricsSubmission, Binding
 
 
 
