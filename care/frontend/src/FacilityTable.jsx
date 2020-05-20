@@ -1,30 +1,59 @@
 import React from 'react';
+import axios from 'axios';
 
 import {
-    Typography, Toolbar, TablePagination,
+    Typography, Toolbar, TablePagination, Dialog,
     Checkbox, TableContainer, Table, TableHead,
-    TableBody, TableRow, TableCell,
+    TableBody, TableRow, TableCell, Button,
     Paper, TableSortLabel
 } from '@material-ui/core';
 
-export default function FacilityTable({facilities, selected, setSelected, total, cursor, setCursor}) {
-    function handleClick (id) {
-        let selectedIndex = selected.indexOf(id);
-        let newSelected = [];
+import MessageSender from './MessageSender';
+
+export default function FacilityTable({facilities, total, cursor, setCursor, filters}) {
+
+    const [selected, setSelected] = React.useState([]);
+
+
+    const [recipients, setRecipients] = React.useState([]);
+
+    const [emails, setEmails] = React.useState('');
+    const [modalOpen, setModalOpen] = React.useState(false);
+    const closeModal = () => setModalOpen(false);
+
+    function messageAll() {
+        axios.get('/api/emails', {
+            params: {
+                ...filters
+            }
+        }).then(res => {
+            setRecipients(res.data);
+            setModalOpen(true);
+        });
+    }
+
+    function messageSelected() {
+        setRecipients(selected);
+        setModalOpen(true);
+    }
     
-        if (selectedIndex === -1) {
-            newSelected = newSelected.concat(selected, id);
-        } else if (selectedIndex === 0) {
-            newSelected = newSelected.concat(selected.slice(1));
-        } else if (selectedIndex === selected.length - 1) {
-            newSelected = newSelected.concat(selected.slice(0, -1));
-        } else if (selectedIndex > 0) {
-            newSelected = newSelected.concat(
-                selected.slice(0, selectedIndex),
-                selected.slice(selectedIndex + 1),
-            );
+    function selectedIndex(facility) {
+        for (let i = 0; i < selected.length; i++) {
+            if (facility.id === selected[i].id) return i;
         }
-        setSelected(newSelected);
+        return -1;
+    }
+
+    function select(facility) {
+        let index = selectedIndex(facility)
+        if (index === -1) {
+            setSelected(selected.concat([facility]));
+        } else {
+            setSelected(
+                selected.slice(0, index)
+                .concat(selected.slice(index + 1))
+            )
+        }
     }
 
     function handleSort(key) {
@@ -82,13 +111,17 @@ export default function FacilityTable({facilities, selected, setSelected, total,
         <Paper>
             <Toolbar>
                 <Typography variant="h6" component="h2" display="block">Facilities</Typography>
-                <Typography variant="subtitle1" component="p" style={{marginLeft: '50px'}}>Click on a column header to resort.</Typography>
+                <Typography style={{flexGrow: 1, marginLeft: '50px'}} variant="subtitle1" component="p">Click on a column header to resort.</Typography>
+                { selected.length > 0 &&
+                    <Button style={{marginRight: '20px'}} variant="contained" color="secondary" onClick={messageSelected}>Message selected</Button>
+                }
+                <Button variant="contained" color="secondary" onClick={messageAll}>Message all</Button>
             </Toolbar>
             <TableContainer>
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell padding="checkbox"></TableCell>
+                            <TableCell padding="checkbox" />
                             {sortKeys.map(sortKey => (
                                 <TableCell key={sortKey.key}>
                                     <TableSortLabel
@@ -103,26 +136,28 @@ export default function FacilityTable({facilities, selected, setSelected, total,
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {facilities.map(facility => ((
-                            <TableRow
-                                hover
-                                onClick={() => handleClick(facility.id)}
-                                role="checkbox"
-                                tabIndex={-1}
-                                key={facility.id}
-                                selected={selected.indexOf(facility.id) !== -1}
-                            >
-                                <TableCell padding="checkbox">
-                                    <Checkbox checked={selected.indexOf(facility.id) !== -1}/>
-                                </TableCell>
-                                <TableCell>{facility.name}</TableCell>
-                                <TableCell>{facility.address}</TableCell>
-                                <TableCell>{facility.phones}</TableCell>
-                                <TableCell>{facility.emails}</TableCell>
-                                <TableCell>{facility.last_upload_date || 'Never'}</TableCell>
-                                <TableCell>{facility.last_message_date || 'Never'}</TableCell>
-                            </TableRow>
-                        )))}
+                        {facilities.map(facility => {
+                            return (
+                                <TableRow
+                                    hover
+                                    onClick={() => select(facility)}
+                                    role="checkbox"
+                                    tabIndex={-1}
+                                    key={facility.id}
+                                    selected={selectedIndex(facility) !== -1}
+                                >
+                                    <TableCell padding="checkbox">
+                                        <Checkbox checked={selectedIndex(facility) !== -1}/>
+                                    </TableCell>
+                                    <TableCell>{facility.name}</TableCell>
+                                    <TableCell>{facility.address}</TableCell>
+                                    <TableCell>{facility.phones}</TableCell>
+                                    <TableCell>{facility.emails}</TableCell>
+                                    <TableCell>{facility.last_upload_date || 'Never'}</TableCell>
+                                    <TableCell>{facility.last_message_date || 'Never'}</TableCell>
+                                </TableRow>
+                            )
+                        })}
                     </TableBody>
                 </Table>
             </TableContainer>
@@ -134,6 +169,12 @@ export default function FacilityTable({facilities, selected, setSelected, total,
                 onChangePage={handleChangePage}
                 rowsPerPageOptions={[]}
             />
+            <Dialog
+                open={modalOpen}
+                onClose={closeModal}
+            >
+                <MessageSender recipients={recipients} emails={emails} closeModal={closeModal}/>
+            </Dialog>
         </Paper>
     );
 }

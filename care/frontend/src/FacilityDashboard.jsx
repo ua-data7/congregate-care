@@ -9,7 +9,7 @@ import FacilityTable from './FacilityTable';
 import DashboardFilters from './DashboardFilters';
 import MessageSender from './MessageSender';
 
-export default function Dashboard({classes}) {
+export default function FacilityDashboard({classes}) {
     const [dbState, setDbState] = React.useState({
         loading: true,
         error: false,
@@ -31,8 +31,6 @@ export default function Dashboard({classes}) {
         order: 'name',
         page: 0
     });
-
-    const [selected, setSelected] = React.useState([]);
 
     React.useEffect(() => {
         axios.get('/api/facilities', {
@@ -62,7 +60,7 @@ export default function Dashboard({classes}) {
 
     return (
         <Container maxWidth="lg">
-            <div className={classes.appBarSpacer} />
+            <div className={classes.appBarSpacer} style={{marginBottom: '30px'}} />
             <Grid container spacing={3}>
                 <Grid item xs={12}>
                     <DashboardFilters
@@ -78,12 +76,8 @@ export default function Dashboard({classes}) {
                         total={dbState.total}
                         cursor={cursor}
                         setCursor={setCursor}
-                        selected={selected}
-                        setSelected={setSelected}
+                        filters={filters}
                     />
-                </Grid>
-                <Grid item xs={12}>
-                    <MessageSender selected={selected} />
                 </Grid>
             </Grid>
         </Container>
