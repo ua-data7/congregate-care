@@ -1,7 +1,7 @@
 import React from 'react';
 
 import {
-    Typography, Toolbar, CssBaseline,
+    Typography, Toolbar, CssBaseline, Link,
     AppBar, makeStyles, Drawer, List, ListItem, ListItemText
 } from '@material-ui/core';
 
@@ -51,11 +51,14 @@ export default function Dashboard() {
             <CssBaseline />
             <AppBar className={classes.appBar}>
                 <Toolbar>
-                    <Typography component="h1" variant="h6" noWrap>
+                    <Typography component="h1" variant="h6" noWrap style={{flexGrow: 1}}>
                         {page.title}
                     </Typography>
+                    <Link href="/admin/" style={{color: '#fff'}}>
+                        Manage Facilities
+                    </Link>
                 </Toolbar>
-            </AppBar>            
+            </AppBar>
             <Drawer
                 className={classes.drawer}
                 variant="permanent"
