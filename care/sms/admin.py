@@ -1,7 +1,7 @@
 from django.contrib import admin
-
-from care.sms.models import Facility, QualtricsSubmission, Binding
-
+from care.sms.models import Facility
+from care.sms.models import QualtricsSubmission
+from care.sms.models import Binding
 
 
 class FacilityAdmin(admin.ModelAdmin):
@@ -18,11 +18,18 @@ class FacilityAdmin(admin.ModelAdmin):
 class BindingAdmin(admin.ModelAdmin):
     list_display = ['facility', 'address', 'opt_out']
     search_fields = ['address', 'opt_out']
-    readonly_fields = ['address', 'facility']
     exclude = ['binding_sid', 'service_sid', 'binding_type']
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            return ['address', 'facility']
+        else:
+            return []
+
 
 class QualtricsSubmissionAdmin(admin.ModelAdmin):
     list_display = ['created_date', 'facility', 'new_cases']
+
 
 admin.site.register(Binding, BindingAdmin)
 admin.site.register(Facility, FacilityAdmin)
