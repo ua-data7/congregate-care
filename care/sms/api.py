@@ -1,6 +1,7 @@
 from django.conf import settings
 import requests
-from rest_framework import viewsets, permissions, generics
+import datetime
+from rest_framework import viewsets, permissions, generics, views
 from rest_framework.response import Response
 from care.sms.models import QualtricsSubmission
 from care.sms.models import TwilioConversation
@@ -17,8 +18,10 @@ from django.http import HttpResponse
 from rest_framework import viewsets, permissions, generics
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from twilio.rest import TwilioException
 import pytz
+
 
 
 class QualtricsFormUpdateWebhookAPIView(generics.CreateAPIView):
@@ -118,12 +121,10 @@ class TwilioConversationListAPIView(generics.ListAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
 
-class SendSMSMessageAPIView(generics.CreateAPIView):
-    queryset = Facility.objects.none()
-    serializer_class = serializers.FacilitySerializer
+class SendSMSMessageAPIView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
-    def create(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         bulk = request.data.get('bulk', False)
         message = request.data.get('message', None)
         if not message:
@@ -133,12 +134,10 @@ class SendSMSMessageAPIView(generics.CreateAPIView):
         return Response(status=status.HTTP_200_OK)
 
 
-class SendEmailMessageAPIView(generics.CreateAPIView):
-    queryset = Facility.objects.none()
-    serializer_class = serializers.FacilitySerializer
+class SendEmailMessageAPIView(views.APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
-    def create(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         bulk = request.data.get('bulk', False)
         message = request.data.get('message', None)
         subject = request.data.get('subject', None)
@@ -147,7 +146,7 @@ class SendEmailMessageAPIView(generics.CreateAPIView):
         if not subject:
             return Response('subject is a required parameter', status=status.HTTP_400_BAD_REQUEST)
         uuid = request.data.get('uuid')
-        send_email_message(uuid, message, bulk=bulk)
+        send_email_message(uuid, subject, message, bulk=bulk)
         return Response(status=status.HTTP_200_OK)
 
 
@@ -168,3 +167,104 @@ class TwilioConversationReplyAPIView(generics.CreateAPIView):
             return Response(message.sid, status=status.HTTP_201_CREATED)
         except TwilioException as e:
             return Response(e, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class CustomPagination(PageNumberPagination):
+    page_size = 10
+
+
+
+def filter_facilities(queryset, filters):
+    if 'minDate' in filters or 'maxDate' in filters:
+        subs = QualtricsSubmission.objects
+        if 'minDate' in filters:
+            parsed_date = datetime.datetime.strptime(filters['minDate'], r'%m/%d/%Y')
+            subs = subs.filter(created_date__gte=parsed_date)
+
+        if 'maxDate' in filters:
+            parsed_date = datetime.datetime.strptime(filters['maxDate'], r'%m/%d/%Y')
+            subs = subs.filter(created_date__lt=parsed_date + datetime.timedelta(days=1))
+
+        queryset = queryset.filter(id__in=subs.values('facility'))
+
+    if 'newCases' in filters and filters['newCases'] == 'true':
+        queryset = queryset.filter(reporting_new_cases=True)
+    
+    if 'category' in filters:
+        if filters['category'] == 'cluster':
+            queryset = queryset.filter(cluster=True)
+        elif filters['category'] == 'noncluster':
+            queryset = queryset.filter(cluster=False)
+
+    if 'size' in filters and filters['size'] != 'all':
+        queryset = queryset.filter(facility_size=filters['size'])
+
+    liasons = filters.getlist('liasons[]')
+    if len(liasons):
+        queryset = queryset.filter(liasons__in=liasons)
+
+    return queryset
+
+
+class FacilityList(generics.ListAPIView):
+    serializer_class = serializers.FacilitySerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    pagination_class = CustomPagination
+    
+    def get_queryset(self):
+        params = self.request.query_params
+        queryset = filter_facilities(Facility.objects.all(), params)
+
+        if 'order' in params:
+            queryset = queryset.order_by(params['order'])
+
+        return queryset
+
+
+class GetFacilityEmails(generics.ListAPIView):
+    serializer_class = serializers.FacilityEmailSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    
+    def get_queryset(self):
+        params = self.request.query_params
+        return filter_facilities(Facility.objects.all(), params)
+
+
+class QualtricsSubmissionList(generics.ListAPIView):
+    serializer_class = serializers.QualtricsSubmissionSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+    pagination_class = CustomPagination
+    
+    def get_queryset(self):
+        params = self.request.query_params
+        queryset = QualtricsSubmission.objects.all()
+
+        if 'minDate' in params:
+            parsed_date = datetime.datetime.strptime(params['minDate'], r'%m/%d/%Y')
+            queryset = queryset.filter(created_date__gte=parsed_date)
+
+        if 'maxDate' in params:
+            parsed_date = datetime.datetime.strptime(params['maxDate'], r'%m/%d/%Y')
+            queryset = queryset.filter(created_date__lt=parsed_date + datetime.timedelta(days=1))
+
+        if 'newCases' in params and params['newCases'] == 'true':
+            queryset = queryset.filter(reporting_new_cases=True)
+    
+        if 'category' in params:
+            if params['category'] == 'cluster':
+                queryset = queryset.filter(facility__cluster=True)
+            elif params['category'] == 'noncluster':
+                queryset = queryset.filter(facility__cluster=False)
+
+        if 'size' in params and params['size'] != 'all':
+            queryset = queryset.filter(facility__facility_size=params['size'])
+
+        liasons = params.getlist('liasons[]')
+        if len(liasons):
+            queryset = queryset.filter(liasons__in=liasons)
+
+        if 'order' in params:
+            queryset = queryset.order_by(params['order'])
+
+        return queryset
+        
