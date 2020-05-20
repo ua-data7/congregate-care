@@ -6,6 +6,7 @@ import shortuuid
 from django.db import transaction
 from django.conf import settings
 import pytz
+from django.core import mail
 
 
 def get_uuid(length=10):
@@ -173,4 +174,5 @@ def send_email_message(uuid, subject, message, attachment_filename=None, attachm
     if email_message:
         if attachment_filename is not None and attachment_content is not None and attachment_mimetype is not None:
             email_message.attach(attachment_filename, attachment_content, attachment_mimetype)
-        email_message.send()
+        with mail.get_connection() as connection:
+            connection.send_messages([email_message])
