@@ -64,7 +64,7 @@ class QualtricsFormUpdateWebhookAPIView(generics.CreateAPIView):
             facility=facility,
             facility_name=facility_name,
             new_cases=new_cases,
-            reporting_new_cases=reporting_new_cases,
+            reported_new_cases=reporting_new_cases,
         )
         return Response(status=status.HTTP_200_OK)
 
