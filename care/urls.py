@@ -17,7 +17,7 @@ from care.frontend import views as front_views
 urlpatterns = [
     path('', front_views.index),
     path('admin/', admin.site.urls),
-    path('api/qualtrics/webhook', QualtricsFormUpdateWebhookAPIView.as_view()),
+    path('api/qualtrics/webhook/', QualtricsFormUpdateWebhookAPIView.as_view()),
     path('api/twilio/conversations', TwilioConversationCallbackAPIView.as_view()),
     path('api/conversations', TwilioConversationListAPIView.as_view()),
     path('api/conversations/reply', TwilioConversationReplyAPIView.as_view()),
