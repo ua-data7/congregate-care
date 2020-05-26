@@ -33,31 +33,33 @@ class QualtricsFormUpdateWebhookAPIView(generics.CreateAPIView):
         # hopefully this is enough for authentication.
         auth_enabled = getattr(settings, 'WEBHOOK_AUTH_ENABLE', None)
         if auth_enabled is not None:
-            if auth_enabled and not request.data['auth_token'] == settings.WEBHOOK_TOKEN:
+            auth_token = request.data.get('auth_token', None)
+            if auth_enabled and not auth_token == settings.WEBHOOK_TOKEN:
                 return Response(status=status.HTTP_403_FORBIDDEN)
         az_now = pytz.timezone('America/Phoenix').localize(pytz.datetime.datetime.now())
         # uuid is embedded data in the qualtrics survey
         uuid = request.data.get('uuid', None)
+        new_cases = request.data.get('new_cases', None)
+        reporting_new_cases = request.data.get('reporting_new_cases', None)
+        reporting_new_cases = reporting_new_cases == 'Yes'
+        filename = request.data.get('filename', None)
+        facility_name = request.data.get('facility', None)
+        if new_cases is None or new_cases == '':
+            new_cases = 0
+        else:
+            # facility will always be cluster if at any point there are new cases
+            # this will not reverse if they report no new cases in a given submission
+            facility.cluster = True
+            new_cases = int(new_cases)
         if uuid:
             facility = Facility.objects.get(identity=uuid)
-            reporting_new_cases = request.data.get('reporting_new_cases', None)
-            reporting_new_cases = reporting_new_cases == 'Yes'
-            filename = request.data.get('filename', None)
             facility.reporting_new_cases = reporting_new_cases
-            new_cases = request.data.get('new_cases', None)
-            if new_cases is None:
-                new_cases = 0
-            else:
-                # facility will always be cluster if at any point there are new cases
-                # this will not reverse if they report no new cases in a given submission
-                facility.cluster = True
             facility.last_new_cases_reported = new_cases
             if filename and len(filename) > 0:
                 facility.last_upload_date = az_now
             facility.save()
         else:
             facility = None
-        facility_name = request.data.get('facility_name', None)
         qualtrics_submission = QualtricsSubmission.objects.create(
             facility=facility,
             facility_name=facility_name,
