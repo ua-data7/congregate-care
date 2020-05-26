@@ -44,16 +44,21 @@ class QualtricsFormUpdateWebhookAPIView(generics.CreateAPIView):
         reporting_new_cases = reporting_new_cases == 'Yes'
         filename = request.data.get('filename', None)
         facility_name = request.data.get('facility', None)
-        if new_cases is None or new_cases == '':
-            new_cases = 0
-        else:
-            # facility will always be cluster if at any point there are new cases
-            # this will not reverse if they report no new cases in a given submission
-            facility.cluster = True
-            new_cases = int(new_cases)
         if uuid:
             facility = Facility.objects.get(identity=uuid)
             facility.reporting_new_cases = reporting_new_cases
+            if new_cases is None or new_cases == '':
+                new_cases = 0
+            else:
+                try:
+                    new_cases = int(new_cases)
+                except ValueError:
+                    # person entered a non-integer string...
+                    new_cases = 0
+            if new_cases > 0:
+                # facility will always be cluster if at any point there are new cases
+                # this will not reverse if they report no new cases in a given submission
+                facility.cluster = True
             facility.last_new_cases_reported = new_cases
             if filename and len(filename) > 0:
                 facility.last_upload_date = az_now
@@ -271,4 +276,3 @@ class QualtricsSubmissionList(generics.ListAPIView):
             queryset = queryset.order_by(params['order'])
 
         return queryset
-        
