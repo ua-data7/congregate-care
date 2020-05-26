@@ -33,7 +33,8 @@ class QualtricsFormUpdateWebhookAPIView(generics.CreateAPIView):
         # hopefully this is enough for authentication.
         auth_enabled = getattr(settings, 'WEBHOOK_AUTH_ENABLE', None)
         if auth_enabled is not None:
-            if auth_enabled and not request.data['auth_token'] == settings.WEBHOOK_TOKEN:
+            auth_token = request.data.get('auth_token', None)
+            if auth_enabled and not auth_token == settings.WEBHOOK_TOKEN:
                 return Response(status=status.HTTP_403_FORBIDDEN)
         az_now = pytz.timezone('America/Phoenix').localize(pytz.datetime.datetime.now())
         # uuid is embedded data in the qualtrics survey
