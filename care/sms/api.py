@@ -211,6 +211,10 @@ def filter_facilities(queryset, filters):
     liasons = filters.getlist('liasons[]')
     if len(liasons):
         queryset = queryset.filter(liasons__in=liasons)
+    
+    tags = filters.getlist('tags[]')
+    if len(tags):
+        queryset = queryset.filter(tags__name__in=tags)
 
     return queryset
 
@@ -270,7 +274,11 @@ class QualtricsSubmissionList(generics.ListAPIView):
 
         liasons = params.getlist('liasons[]')
         if len(liasons):
-            queryset = queryset.filter(liasons__in=liasons)
+            queryset = queryset.filter(facility__liasons__in=liasons)
+
+        tags = params.getlist('tags[]')
+        if len(tags):
+            queryset = queryset.filter(facility__tags__name__in=tags)
 
         if 'order' in params:
             queryset = queryset.order_by(params['order'])

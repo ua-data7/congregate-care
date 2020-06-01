@@ -24,7 +24,8 @@ export default function SubmissionDashboard({classes}) {
         newCases: false,
         category: 'all',
         size: 'all',
-        liasons: []
+        liasons: [],
+        tags: []
     });
 
     const [cursor, setCursor] = React.useState({
