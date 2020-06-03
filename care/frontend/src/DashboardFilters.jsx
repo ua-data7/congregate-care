@@ -21,7 +21,7 @@ function DateInput(props) {
 
 export default function DashboardFilters({filters, setFilters, loading}) {
 
-    let liasons = [
+    const liasons = [
         'Deb',
         'Allison',
         'Janet',
@@ -34,6 +34,13 @@ export default function DashboardFilters({filters, setFilters, loading}) {
         'Justin',
         'Clementina'
     ];
+
+    const tags = [
+        'Apartments',
+        'ALF',
+        'LTC',
+        'Other'
+    ]
 
     return (
         <Paper>
@@ -154,6 +161,32 @@ export default function DashboardFilters({filters, setFilters, loading}) {
                             <MenuItem value="all">All Sizes</MenuItem>
                             <MenuItem value="Small">Small</MenuItem>
                             <MenuItem value="Large">Large</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Grid>
+                <Grid item xs={3}>
+                    <FormControl style={{minWidth: '150px', maxWidth: '250px'}}>
+                        <InputLabel id="tags-label">Tags</InputLabel>
+                        <Select
+                            labelId="tags-label"
+                            multiple
+                            value={filters.tags}
+                            onChange={event => {
+                                let tags = event.target.value;    
+                                setFilters(prev => ({
+                                    ...prev,
+                                    tags: tags || []
+                                }));
+                            }}
+                            input={<Input />}
+                            renderValue={(selected) => selected.join(', ')}
+                        >
+                        {tags.map((tag) => (
+                            <MenuItem key={tag} value={tag}>
+                                <Checkbox checked={filters.tags.indexOf(tag) !== -1} />
+                                {tag}
+                            </MenuItem>
+                        ))}
                         </Select>
                     </FormControl>
                 </Grid>

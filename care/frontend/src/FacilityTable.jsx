@@ -164,9 +164,7 @@ export default function FacilityTable({facilities, total, cursor, setCursor, fil
                 onChangePage={handleChangePage}
                 rowsPerPageOptions={[]}
             />
-            <Dialog open={modalOpen} onClose={closeModal} >
-                <MessageSender recipients={recipients} closeModal={closeModal}/>
-            </Dialog>
+            <MessageSender open={modalOpen} onClose={closeModal} recipients={recipients} closeModal={closeModal}/>
         </Paper>
     );
 }
