@@ -23,7 +23,9 @@ function DateInput(props) {
 export default function DashboardFilters({filters, setFilters, loading}) {
 
     const [liaisons, setLiaisons] = React.useState([]);
-    axios.get('/api/liaisons').then(res => setLiaisons(res.data));
+    React.useEffect(() => {
+        axios.get('/api/liaisons').then(res => setLiaisons(res.data));
+    }, []);
 
     const tags = [
         'Apartments',
