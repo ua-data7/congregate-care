@@ -256,6 +256,15 @@ class GetFacilityEmails(generics.ListAPIView):
         return filter_facilities(Facility.objects.all(), params)
 
 
+
+class LiaisonList(views.APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        liaisons = Facility.objects.order_by('liaisons').values_list('liaisons', flat=True).distinct()
+        return Response(liaisons)
+
+
 class QualtricsSubmissionList(generics.ListAPIView):
     serializer_class = serializers.QualtricsSubmissionSerializer
     permission_classes = (permissions.IsAuthenticated,)
