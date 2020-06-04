@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 
 import {
     Typography, Grid, Toolbar,
@@ -21,26 +22,15 @@ function DateInput(props) {
 
 export default function DashboardFilters({filters, setFilters, loading}) {
 
-    const liasons = [
-        'Deb',
-        'Allison',
-        'Janet',
-        'Kat',
-        'Gabby',
-        'Emerson',
-        'Lisa',
-        'Said',
-        'Melody',
-        'Justin',
-        'Clementina'
-    ];
+    const [liaisons, setLiaisons] = React.useState([]);
+    axios.get('/api/liaisons').then(res => setLiaisons(res.data));
 
     const tags = [
         'Apartments',
         'ALF',
         'LTC',
         'Other'
-    ]
+    ];
 
     return (
         <Paper>
@@ -49,29 +39,29 @@ export default function DashboardFilters({filters, setFilters, loading}) {
             </Toolbar>
             <Toolbar>
                 <Grid item xs={2}>
-                    <Typography>Liason:</Typography>
+                    <Typography>Liaison:</Typography>
                 </Grid>
                 <Grid item xs={3}>
                     <FormControl style={{minWidth: '150px', maxWidth: '250px'}}>
-                        <InputLabel id="liason-label">Liason</InputLabel>
+                        <InputLabel id="liaison-label">Liaison</InputLabel>
                         <Select
-                            labelId="liason-label"
+                            labelId="liaison-label"
                             multiple
-                            value={filters.liasons}
+                            value={filters.liaisons}
                             onChange={event => {
-                                let liasons = event.target.value;    
+                                let liaisons = event.target.value;    
                                 setFilters(prev => ({
                                     ...prev,
-                                    liasons: liasons || []
+                                    liaisons: liaisons || []
                                 }));
                             }}
                             input={<Input />}
                             renderValue={(selected) => selected.join(', ')}
                         >
-                        {liasons.map((liason) => (
-                            <MenuItem key={liason} value={liason}>
-                                <Checkbox checked={filters.liasons.indexOf(liason) !== -1} />
-                                {liason}
+                        {liaisons.length > 0 && liaisons.map((liaison) => (
+                            <MenuItem key={liaison} value={liaison}>
+                                <Checkbox checked={filters.liaisons.indexOf(liaison) !== -1} />
+                                {liaison}
                             </MenuItem>
                         ))}
                         </Select>

@@ -24,7 +24,7 @@ export default function SubmissionDashboard({classes}) {
         newCases: false,
         category: 'all',
         size: 'all',
-        liasons: [],
+        liaisons: [],
         tags: []
     });
 

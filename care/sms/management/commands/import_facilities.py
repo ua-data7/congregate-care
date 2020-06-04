@@ -5,15 +5,16 @@ from care.sms.models import get_uuid
 # Facility Name, 0
 # Facility Address, 1
 # Contact phone, 2
-# Contact Name, 3
-# Contact Email, 4
-# LTC, 5
-# ALF, 6
-# Apartments, 7
-# Other, 8
-# Facility Size, 9
-# Liaison Name, 10
-# Cluster/NC, 11
+# Known SMS, 3
+# Contact Name, 4
+# Contact Email, 5
+# LTC, 6
+# ALF, 7
+# Apartments, 8
+# Other, 9
+# Facility Size, 10
+# Liaison Name, 11
+# Cluster/NC, 12
 class Command(BaseCommand):
     help = 'Import Facilities from Facility Liason List Excel file. THIS WILL DELETE ALL EXISTING FACILITIES.'
     def add_arguments(self, parser):
@@ -26,25 +27,27 @@ class Command(BaseCommand):
         for row in ws1:
             if rows > 0:
                 phones = ', '.join(row[2].value.split(';'))
-                if row[4].value: emails = ', '.join(row[4].value.split(';'))
-                else: emails = ''
-                ltc = row[5].value.lower() == 'yes'
-                alf = row[6].value.lower() == 'yes'
-                apartments = row[7].value.lower() == 'yes'
-                other = row[8].value.lower() == 'yes'
-                cluster = row[11].value.lower() == 'cluster'
-                size = row[9].value
-                liason_name = row[10].value
+                if row[5].value:
+                    emails = ', '.join(row[5].value.split(';'))
+                else:
+                    emails = ''
+                ltc = row[6].value.lower() == 'yes'
+                alf = row[7].value.lower() == 'yes'
+                apartments = row[8].value.lower() == 'yes'
+                other = row[9].value.lower() == 'yes'
+                cluster = row[12].value.lower() == 'cluster'
+                size = row[10].value.strip()
+                liaison_name = row[11].value.strip()
                 uuid = get_uuid()
                 facility = Facility.objects.create(
                     identity=uuid,
-                    name=row[0].value,
-                    address=row[1].value,
+                    name=row[0].value.strip(),
+                    address=row[1].value.strip(),
                     emails=emails,
                     phones=phones,
                     cluster=cluster,
                     facility_size=size,
-                    liasons=liason_name,
+                    liaisons=liaison_name,
                 )
                 if apartments:
                     facility.tags.add('Apartments')
@@ -55,5 +58,12 @@ class Command(BaseCommand):
                 if other:
                     facility.tags.add('Other')
                 facility.save()
-            
+                sms_phones = row[3].value
+                if sms_phones:
+                    for phone in sms_phones.split(','):
+                        addr = '+' + phone.strip()
+                        Binding.objects.create(
+                            address=addr,
+                            facility=facility,
+                        )
             rows += 1

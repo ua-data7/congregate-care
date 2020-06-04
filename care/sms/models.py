@@ -21,7 +21,7 @@ class Facility(models.Model):
     facility_size = models.CharField(max_length=20, blank=True, null=True)
     cluster = models.BooleanField(default=False)
     address = models.TextField(blank=True, null=True)
-    liasons = models.CharField(max_length=255, blank=True, null=True)
+    liaisons = models.CharField(max_length=255, blank=True, null=True)
     emails = models.TextField(blank=True, null=True)
     phones = models.TextField(blank=True, null=True)
     tags = TaggableManager(blank=True) # used for facility type/etc.
@@ -157,7 +157,7 @@ def send_email_message(uuid, subject, message, attachment_filename=None, attachm
     email_message = None
     if bulk:
         email_facilities = list(Facility.objects.filter(identity__in=uuid).values_list('emails', flat=True))
-        if len(email_users) > 0:
+        if len(email_facilities) > 0:
             emails = []
             for facility in email_facilities:
                 for email in facility.split(','):

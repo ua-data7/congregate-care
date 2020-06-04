@@ -25,7 +25,7 @@ class FacilitySerializer(serializers.ModelSerializer):
             'facility_size',
             'cluster',
             'address',
-            'liasons',
+            'liaisons',
             'emails',
             'phones',
             'preferred_contact',

@@ -16,13 +16,13 @@ attachment_mimetype = 'application/vnd.ms-excel'
 
 class Command(BaseCommand):
     help = 'Sends a reminder with link to survey to Facilities that have cluster status daily.'
-
+    # to be scheduled in a cron job at 3pm weekdays (no sat/sun).
     def handle(self, *args, **options):
         az_now = pytz.timezone('America/Phoenix').localize(pytz.datetime.datetime.now())
         for facility in Facility.objects.filter(cluster=True):
-            sms_message = CLUSTER_DAILY_TPL['sms'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
+            # sms_message = CLUSTER_DAILY_TPL['sms'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
             email_message = CLUSTER_DAILY_TPL['email'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
-            send_sms_message(facility.identity, sms_message, bulk=False)
+            # send_sms_message(facility.identity, sms_message, bulk=False)
             send_email_message(facility.identity, CLUSTER_DAILY_TPL['subject'], email_message, bulk=False, attachment_filename=attachment_filename, attachment_content=attachment_content, attachment_mimetype=attachment_mimetype)
             facility.last_message_date = az_now
             facility.save()
