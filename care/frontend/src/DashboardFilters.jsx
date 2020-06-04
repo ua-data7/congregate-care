@@ -57,20 +57,20 @@ export default function DashboardFilters({filters, setFilters, loading}) {
                         <Select
                             labelId="liason-label"
                             multiple
-                            value={filters.liasons}
+                            value={filters.liaisons}
                             onChange={event => {
-                                let liasons = event.target.value;    
+                                let liaisons = event.target.value;    
                                 setFilters(prev => ({
                                     ...prev,
-                                    liasons: liasons || []
+                                    liaisons: liaisons || []
                                 }));
                             }}
                             input={<Input />}
                             renderValue={(selected) => selected.join(', ')}
                         >
-                        {liasons.map((liason) => (
+                        {liaisons.map((liason) => (
                             <MenuItem key={liason} value={liason}>
-                                <Checkbox checked={filters.liasons.indexOf(liason) !== -1} />
+                                <Checkbox checked={filters.liaisons.indexOf(liason) !== -1} />
                                 {liason}
                             </MenuItem>
                         ))}

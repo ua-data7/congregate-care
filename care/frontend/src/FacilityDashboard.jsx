@@ -24,7 +24,7 @@ export default function FacilityDashboard({classes}) {
         newCases: false,
         category: 'all',
         size: 'all',
-        liasons: [],
+        liaisons: []
         tags: []
     });
 

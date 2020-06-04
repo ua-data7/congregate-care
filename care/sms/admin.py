@@ -5,7 +5,7 @@ from care.sms.models import Binding
 
 
 class FacilityAdmin(admin.ModelAdmin):
-    list_display = ['name', 'liasons', 'tag_list']
+    list_display = ['name', 'liaisons', 'tag_list']
     search_fields = ['name']
 
     def get_queryset(self, request):

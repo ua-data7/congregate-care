@@ -21,7 +21,7 @@ class Facility(models.Model):
     facility_size = models.CharField(max_length=20, blank=True, null=True)
     cluster = models.BooleanField(default=False)
     address = models.TextField(blank=True, null=True)
-    liasons = models.CharField(max_length=255, blank=True, null=True)
+    liaisons = models.CharField(max_length=255, blank=True, null=True)
     emails = models.TextField(blank=True, null=True)
     phones = models.TextField(blank=True, null=True)
     tags = TaggableManager(blank=True) # used for facility type/etc.

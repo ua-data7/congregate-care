@@ -11,6 +11,7 @@ from care.sms.models import Binding
 from care.sms.models import send_sms_message
 from care.sms.models import send_email_message
 from care.sms.twilio import twilio_client
+from care.sms.utils import FACILITY_NEW_CASE_TPL
 from care.sms import serializers
 from rest_framework import parsers
 from django import forms
@@ -21,7 +22,8 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from twilio.rest import TwilioException
 import pytz
-
+from django.core.mail import EmailMultiAlternatives
+from django.core import mail
 
 
 class QualtricsFormUpdateWebhookAPIView(generics.CreateAPIView):
@@ -44,25 +46,36 @@ class QualtricsFormUpdateWebhookAPIView(generics.CreateAPIView):
         reporting_new_cases = reporting_new_cases == 'Yes'
         filename = request.data.get('filename', None)
         facility_name = request.data.get('facility', None)
-        if uuid:
-            facility = Facility.objects.get(identity=uuid)
-            facility.reporting_new_cases = reporting_new_cases
-            if new_cases is None or new_cases == '':
+        if new_cases is None or new_cases == '':
+            new_cases = 0
+        else:
+            try:
+                new_cases = int(new_cases)
+            except ValueError:
+                # person entered a non-integer string...
                 new_cases = 0
-            else:
-                try:
-                    new_cases = int(new_cases)
-                except ValueError:
-                    # person entered a non-integer string...
-                    new_cases = 0
-            if new_cases > 0:
-                # facility will always be cluster if at any point there are new cases
-                # this will not reverse if they report no new cases in a given submission
-                facility.cluster = True
-            facility.last_new_cases_reported = new_cases
-            if filename and len(filename) > 0:
-                facility.last_upload_date = az_now
-            facility.save()
+        if uuid:
+            facility = Facility.objects.filter(identity=uuid)
+            if facility.exists():
+                updates = {
+                    'reporting_new_cases': reporting_new_cases,
+                    'last_new_cases_reported': new_cases,
+                }
+                if filename and len(filename) > 0:
+                    updates['last_upload_date'] = az_now
+                if new_cases > 0:
+                    # facility will always be cluster if at any point there are new cases
+                    # this will not reverse if they report no new cases in a given submission
+                    updates['cluster'] = True
+                facility.update(**updates)
+                if new_cases > 0:
+                    # new cases - send email to Liaison.
+                    subject = FACILITY_NEW_CASE_TPL['subject'].format(facility_name=facility[0].name)
+                    message = FACILITY_NEW_CASE_TPL['message'].format(facility_name=facility[0].name)
+                    to_emails = settings.LIAISON_EMAIL_MAP[facility[0].liaisons]
+                    email_message = EmailMultiAlternatives(subject, message, settings.SENDGRID_FROM_EMAIL, [to_emails[0]], to_emails[1:], reply_to=[settings.SENDGRID_REPLY_TO_EMAIL])
+                    with mail.get_connection() as connection:
+                        connection.send_messages([email_message])
         else:
             facility = None
         qualtrics_submission = QualtricsSubmission.objects.create(
@@ -208,9 +221,9 @@ def filter_facilities(queryset, filters):
     if 'size' in filters and filters['size'] != 'all':
         queryset = queryset.filter(facility_size=filters['size'])
 
-    liasons = filters.getlist('liasons[]')
-    if len(liasons):
-        queryset = queryset.filter(liasons__in=liasons)
+    liaisons = filters.getlist('liaisons[]')
+    if len(liaisons):
+        queryset = queryset.filter(liaisons__in=liaisons)
     
     tags = filters.getlist('tags[]')
     if len(tags):
@@ -272,9 +285,9 @@ class QualtricsSubmissionList(generics.ListAPIView):
         if 'size' in params and params['size'] != 'all':
             queryset = queryset.filter(facility__facility_size=params['size'])
 
-        liasons = params.getlist('liasons[]')
-        if len(liasons):
-            queryset = queryset.filter(facility__liasons__in=liasons)
+        liaisons = params.getlist('liaisons[]')
+        if len(liaisons):
+            queryset = queryset.filter(liaisons__in=liaisons)
 
         tags = params.getlist('tags[]')
         if len(tags):
