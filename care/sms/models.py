@@ -157,7 +157,7 @@ def send_email_message(uuid, subject, message, attachment_filename=None, attachm
     email_message = None
     if bulk:
         email_facilities = list(Facility.objects.filter(identity__in=uuid).values_list('emails', flat=True))
-        if len(email_users) > 0:
+        if len(email_facilities) > 0:
             emails = []
             for facility in email_facilities:
                 for email in facility.split(','):
