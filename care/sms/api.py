@@ -76,6 +76,9 @@ class QualtricsFormUpdateWebhookAPIView(generics.CreateAPIView):
                     email_message = EmailMultiAlternatives(subject, message, settings.SENDGRID_FROM_EMAIL, [to_emails[0]], to_emails[1:], reply_to=[settings.SENDGRID_REPLY_TO_EMAIL])
                     with mail.get_connection() as connection:
                         connection.send_messages([email_message])
+                facility = facility[0]
+            else:
+                facility = None
         else:
             facility = None
         qualtrics_submission = QualtricsSubmission.objects.create(
