@@ -63,10 +63,17 @@ class Command(BaseCommand):
                 facility.last_message_date = now
                 facility.save()
         for key in settings.LIAISON_EMAIL_MAP.keys():
-            to_emails = settings.LIAISON_EMAIL_MAP[key]
-            non_cluser_facilities_txt = '\n'.join(non_cluser_facilities)
-            cluster_facilities_txt = '\n'.join(cluster_facilities)
-            message = LIAISON_WEEKLY_TPL['message'].format(non_cluser_facilities=non_cluser_facilities_txt, cluster_facilities=cluster_facilities_txt)
-            email_message = EmailMultiAlternatives(LIAISON_WEEKLY_TPL['subject'], message, settings.SENDGRID_FROM_EMAIL, [to_emails[0]], to_emails[1:], settings.LIAISON_EMAIL_MAP[key][0], reply_to=[settings.SENDGRID_REPLY_TO_EMAIL])
-            with mail.get_connection() as connection:
-                connection.send_messages([email_message])
+            if (len(non_cluser_facilities[key]) > 0) or (len(cluster_facilities[key]) > 0):
+                to_emails = settings.LIAISON_EMAIL_MAP[key]
+                if len(non_cluser_facilities[key]) > 0:
+                    non_cluser_facilities_txt = '\n'.join(non_cluser_facilities[key])
+                else:
+                    non_cluser_facilities_txt = 'None\n'
+                if len(cluster_facilities[key]) > 0:
+                    cluster_facilities_txt = '\n'.join(cluster_facilities[key])
+                else:
+                    cluster_facilities_txt = 'None\n'
+                message = LIAISON_WEEKLY_TPL['message'].format(non_cluser_facilities=non_cluser_facilities_txt, cluster_facilities=cluster_facilities_txt)
+                email_message = EmailMultiAlternatives(LIAISON_WEEKLY_TPL['subject'], message, settings.SENDGRID_FROM_EMAIL, [to_emails[0]], to_emails[1:], settings.LIAISON_EMAIL_MAP[key][0], reply_to=[settings.SENDGRID_REPLY_TO_EMAIL])
+                with mail.get_connection() as connection:
+                    connection.send_messages([email_message])
