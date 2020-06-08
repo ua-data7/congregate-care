@@ -34,6 +34,7 @@ export default function SubmissionTable({submissions, total, cursor, setCursor, 
     }
     
     function selectedIndex(facility) {
+        if (!facility) return -1;
         for (let i = 0; i < selected.length; i++) {
             if (facility.id === selected[i].id) return i;
         }
@@ -41,6 +42,7 @@ export default function SubmissionTable({submissions, total, cursor, setCursor, 
     }
 
     function select(facility) {
+        if (!facility) return;
         let index = selectedIndex(facility)
         if (index === -1) {
             setSelected(selected.concat([facility]));
@@ -107,9 +109,13 @@ export default function SubmissionTable({submissions, total, cursor, setCursor, 
         <Paper>
             <Toolbar>
                 <Typography variant="h6" component="h2" display="block">Submissions</Typography>
-                <Typography style={{flexGrow: 1, marginLeft: '50px'}} variant="subtitle1" component="p">Click on a column header to resort.</Typography>
+                <Typography style={{flexGrow: 1, marginLeft: '50px'}} variant="subtitle1" component="p">
+                    Click on a column header to resort.
+                </Typography>
                 { selected.length > 0 &&
-                    <Button style={{marginRight: '20px'}} variant="contained" color="secondary" onClick={messageSelected}>Message selected</Button>
+                    <Button style={{marginRight: '20px'}} variant="contained" color="secondary" onClick={messageSelected}>
+                        Message selected
+                    </Button>
                 }
                 <Button variant="contained" color="secondary" onClick={messageAll}>Message all</Button>
             </Toolbar>
@@ -144,10 +150,16 @@ export default function SubmissionTable({submissions, total, cursor, setCursor, 
                                 <TableCell padding="checkbox">
                                     <Checkbox checked={selectedIndex(row.facility) !== -1}/>
                                 </TableCell>
-                                <TableCell>{row.facility.name}</TableCell>
-                                <TableCell>{row.facility.address}</TableCell>
-                                <TableCell>{row.facility.phones}</TableCell>
-                                <TableCell>{row.facility.emails}</TableCell>
+                                <TableCell>
+                                    {row.facility ? row.facility.name :
+                                        <React.Fragment>
+                                            {row.facility_name} <strong>(Missing facility ID)</strong>
+                                        </React.Fragment>
+                                    }
+                                </TableCell>
+                                <TableCell>{row.facility && row.facility.address}</TableCell>
+                                <TableCell>{row.facility && row.facility.phones}</TableCell>
+                                <TableCell>{row.facility && row.facility.emails}</TableCell>
                                 <TableCell>{row.reported_new_cases ? 'Yes' : 'No'}</TableCell>
                                 <TableCell>{row.created_date || 'Never'}</TableCell>
                             </TableRow>
