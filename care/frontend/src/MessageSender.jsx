@@ -19,7 +19,7 @@ export default function MessageSender({open, onClose, recipients, closeModal}) {
     const [emailToast, setEmailToast] = React.useState('');
         
     function copyEmails() {
-        let emails = recipients.map(facility => facility.emails).join(',');
+        let emails = recipients.map(facility => facility.emails).join(';');
         navigator.clipboard.writeText(emails);
         setCopied(true);
     }
