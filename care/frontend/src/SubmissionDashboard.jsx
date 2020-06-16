@@ -7,15 +7,13 @@ import {
 
 import SubmissionTable from './SubmissionTable';
 import DashboardFilters from './DashboardFilters';
-import MessageSender from './MessageSender';
 
-export default function SubmissionDashboard({classes}) {
+export default function SubmissionDashboard() {
     const [dbState, setDbState] = React.useState({
         loading: true,
         error: false,
         submissions: [],
-        total: 0,
-        filters: {}
+        total: 0
     });
 
     const [filters, setFilters] = React.useState({
@@ -63,8 +61,7 @@ export default function SubmissionDashboard({classes}) {
 
     return (
         <Container maxWidth="lg">
-            <div className={classes.appBarSpacer} />
-            <Grid container spacing={3}>
+            <Grid container spacing={3} style={{marginTop: '80px'}}>
                 <Grid item xs={12}>
                     <DashboardFilters loading={dbState.loading} filters={filters} setFilters={setFilters} />
                 </Grid>

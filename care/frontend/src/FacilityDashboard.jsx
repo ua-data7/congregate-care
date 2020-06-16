@@ -7,15 +7,13 @@ import {
 
 import FacilityTable from './FacilityTable';
 import DashboardFilters from './DashboardFilters';
-import MessageSender from './MessageSender';
 
-export default function FacilityDashboard({classes}) {
+export default function FacilityDashboard() {
     const [dbState, setDbState] = React.useState({
         loading: true,
         error: false,
         facilities: [],
-        total: 0,
-        filters: {}
+        total: 0
     });
 
     const [filters, setFilters] = React.useState({
@@ -61,8 +59,7 @@ export default function FacilityDashboard({classes}) {
 
     return (
         <Container maxWidth="lg">
-            <div className={classes.appBarSpacer} style={{marginBottom: '30px'}} />
-            <Grid container spacing={3}>
+            <Grid container spacing={3} style={{marginTop: '80px'}}>
                 <Grid item xs={12}>
                     <DashboardFilters
                         loading={dbState.loading}

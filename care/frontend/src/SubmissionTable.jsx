@@ -138,7 +138,7 @@ export default function SubmissionTable({submissions, total, cursor, setCursor, 
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {submissions.map(row => ((
+                        {submissions.map(row => (
                             <TableRow
                                 hover
                                 onClick={() => select(row.facility)}
@@ -163,7 +163,7 @@ export default function SubmissionTable({submissions, total, cursor, setCursor, 
                                 <TableCell>{row.reported_new_cases ? 'Yes' : 'No'}</TableCell>
                                 <TableCell>{row.created_date || 'Never'}</TableCell>
                             </TableRow>
-                        )))}
+                        ))}
                     </TableBody>
                 </Table>
             </TableContainer>
@@ -175,9 +175,7 @@ export default function SubmissionTable({submissions, total, cursor, setCursor, 
                 onChangePage={handleChangePage}
                 rowsPerPageOptions={[]}
             />
-            <Dialog open={modalOpen} onClose={closeModal}>
-                <MessageSender recipients={recipients} closeModal={closeModal}/>
-            </Dialog>
+            <MessageSender open={modalOpen} onClose={closeModal} recipients={recipients} closeModal={closeModal}/>
         </Paper>
     );
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import axios from 'axios';
 
 import {
-    Typography, Toolbar, TablePagination, Dialog,
+    Typography, Toolbar, TablePagination,
     Checkbox, TableContainer, Table, TableHead,
     TableBody, TableRow, TableCell, Button,
     Paper, TableSortLabel
@@ -132,26 +132,25 @@ export default function FacilityTable({facilities, total, cursor, setCursor, fil
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {facilities.map(facility => ((
-                                <TableRow
-                                    hover
-                                    onClick={() => select(facility)}
-                                    role="checkbox"
-                                    tabIndex={-1}
-                                    key={facility.id}
-                                    selected={selectedIndex(facility) !== -1}
-                                >
-                                    <TableCell padding="checkbox">
-                                        <Checkbox checked={selectedIndex(facility) !== -1}/>
-                                    </TableCell>
-                                    <TableCell>{facility.name}</TableCell>
-                                    <TableCell>{facility.address}</TableCell>
-                                    <TableCell>{facility.phones}</TableCell>
-                                    <TableCell>{facility.emails}</TableCell>
-                                    <TableCell>{facility.last_upload_date || 'Never'}</TableCell>
-                                    <TableCell>{facility.last_message_date || 'Never'}</TableCell>
-                                </TableRow>
-                            )
+                        {facilities.map(facility => (
+                            <TableRow
+                                hover
+                                onClick={() => select(facility)}
+                                role="checkbox"
+                                tabIndex={-1}
+                                key={facility.id}
+                                selected={selectedIndex(facility) !== -1}
+                            >
+                                <TableCell padding="checkbox">
+                                    <Checkbox checked={selectedIndex(facility) !== -1}/>
+                                </TableCell>
+                                <TableCell>{facility.name}</TableCell>
+                                <TableCell>{facility.address}</TableCell>
+                                <TableCell>{facility.phones}</TableCell>
+                                <TableCell>{facility.emails}</TableCell>
+                                <TableCell>{facility.last_upload_date || 'Never'}</TableCell>
+                                <TableCell>{facility.last_message_date || 'Never'}</TableCell>
+                            </TableRow>
                         ))}
                     </TableBody>
                 </Table>

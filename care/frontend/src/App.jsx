@@ -7,8 +7,9 @@ import {
 
 import SubmissionDashboard from './SubmissionDashboard';
 import FacilityDashboard from './FacilityDashboard';
+import SummaryDashboard from './SummaryDashboard';
 
-const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles(theme => ({
     root: {
         display: 'flex',
     },    
@@ -28,7 +29,7 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-export default function Dashboard() {
+export default function App() {
     const classes = useStyles();
     
     const pages = [
@@ -41,6 +42,11 @@ export default function Dashboard() {
             title: 'PCHD Qualtrics Submissions',
             abbr: 'Submissions',
             component: SubmissionDashboard
+        },
+        {
+            title: 'Submission Summary',
+            abbr: 'Summary',
+            component: SummaryDashboard
         }
     ];
 
@@ -78,7 +84,7 @@ export default function Dashboard() {
                 </div>
             </Drawer>
             <div className={classes.appBarSpacer} />
-            <page.component classes={classes}/>
+            <page.component />
         </div>
     );
 }
