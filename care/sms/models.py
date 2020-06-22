@@ -29,6 +29,7 @@ class Facility(models.Model):
     last_new_cases_reported = models.IntegerField(default=0)
     last_upload_date = models.DateTimeField(blank=True, null=True)
     last_message_date = models.DateTimeField(blank=True, null=True)
+    last_sms_date = models.DateTimeField(blank=True, null=True)
     last_message_open_date = models.DateTimeField(blank=True, null=True)
     last_modified = models.DateTimeField(auto_now=True)
     created_date = models.DateTimeField(auto_now_add=True)

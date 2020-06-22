@@ -9,20 +9,24 @@ from django.core.mail import EmailMultiAlternatives
 from django.core import mail
 
 
-attachment_filename = 'LTC Facility Linelist Template Final.xls'
+AMERICA_PHOENIX = pytz.timezone('America/Phoenix')
+
+attachment_filename = 'Linelist_Instruction.pdf'
 attachment_path = os.path.join(settings.BASE_DIR, 'sms', 'templates', 'messages', attachment_filename)
 with open(attachment_path, 'rb+') as f:
     attachment_content = f.read()
-attachment_mimetype = 'application/vnd.ms-excel'
+attachment_mimetype = 'application/pdf'
 
 
 class Command(BaseCommand):
     help = 'Sends a reminder to non-cluster Facilities weekly.'
     # to be scheduled in a cron job at 9am Mondays.
     def handle(self, *args, **options):
-        now = timezone.now()
+        now = timezone.now().astimezone(AMERICA_PHOENIX)
         non_cluser_facilities = {}
         cluster_facilities = {}
+        email_enabled = getattr(settings, 'EMAIL_ENABLED', True)
+        sms_enabled = getattr(settings, 'SMS_ENABLED', True)
         for key in settings.LIAISON_EMAIL_MAP.keys():
             non_cluser_facilities[key] = []
             cluster_facilities[key] = []
@@ -36,10 +40,12 @@ class Command(BaseCommand):
             else:
                 do_message = True
             if do_message:
-                email_message = NON_CLUSTER_WEEKLY_TPL['email'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
-                # sms_message = NON_CLUSTER_WEEKLY_TPL['sms'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
-                send_email_message(facility.identity, NON_CLUSTER_WEEKLY_TPL['subject'], email_message, bulk=False, attachment_filename=attachment_filename, attachment_content=attachment_content, attachment_mimetype=attachment_mimetype)
-                # send_sms_message(facility.identity, sms_message, bulk=False)
+                if email_enabled:
+                    email_message = NON_CLUSTER_WEEKLY_TPL['email'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK, facility_name=facility.name)
+                    send_email_message(facility.identity, NON_CLUSTER_WEEKLY_TPL['subject'], email_message, bulk=False, attachment_filename=attachment_filename, attachment_content=attachment_content, attachment_mimetype=attachment_mimetype)
+                if sms_enabled:
+                    sms_message = NON_CLUSTER_WEEKLY_TPL['sms'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
+                    send_sms_message(facility.identity, sms_message, bulk=False)
                 if facility.liaisons in non_cluser_facilities:
                     non_cluser_facilities[facility.liaisons].append(f'{facility.name} - {facility.identity}')
                 facility.last_message_date = now
@@ -54,10 +60,12 @@ class Command(BaseCommand):
             else:
                 do_message = True
             if do_message:
-                email_message = CLUSTER_WEEKLY_TPL['email'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
-                # sms_message = CLUSTER_WEEKLY_TPL['sms'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
-                # send_sms_message(facility.identity, sms_message, bulk=False)
-                send_email_message(facility.identity, CLUSTER_WEEKLY_TPL['subject'], email_message, bulk=False, attachment_filename=attachment_filename, attachment_content=attachment_content, attachment_mimetype=attachment_mimetype)
+                if email_enabled:
+                    email_message = CLUSTER_WEEKLY_TPL['email'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK, facility_name=facility.name)
+                    send_email_message(facility.identity, CLUSTER_WEEKLY_TPL['subject'], email_message, bulk=False, attachment_filename=attachment_filename, attachment_content=attachment_content, attachment_mimetype=attachment_mimetype)
+                if sms_enabled:
+                    sms_message = CLUSTER_WEEKLY_TPL['sms'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
+                    send_sms_message(facility.identity, sms_message, bulk=False)
                 if facility.liaisons in cluster_facilities:
                     cluster_facilities[facility.liaisons].append(f'{facility.name} - {facility.identity}')
                 facility.last_message_date = now

@@ -3,26 +3,33 @@ from care.sms.models import Facility
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from care.sms.utils import CLUSTER_DAILY_TPL
+from django.utils import timezone
 import pytz
 import os
 
 
-attachment_filename = 'LTC Facility Linelist Template Final.xls'
+AMERICA_PHOENIX = pytz.timezone('America/Phoenix')
+
+attachment_filename = 'Linelist_Instruction.pdf'
 attachment_path = os.path.join(settings.BASE_DIR, 'sms', 'templates', 'messages', attachment_filename)
 with open(attachment_path, 'rb+') as f:
     attachment_content = f.read()
-attachment_mimetype = 'application/vnd.ms-excel'
+attachment_mimetype = 'application/pdf'
 
 
 class Command(BaseCommand):
     help = 'Sends a reminder with link to survey to Facilities that have cluster status daily.'
     # to be scheduled in a cron job at 3pm weekdays (no sat/sun).
     def handle(self, *args, **options):
-        az_now = pytz.timezone('America/Phoenix').localize(pytz.datetime.datetime.now())
+        az_now = timezone.now().astimezone(AMERICA_PHOENIX)
+        email_enabled = getattr(settings, 'EMAIL_ENABLED', True)
+        sms_enabled = getattr(settings, 'SMS_ENABLED', True)
         for facility in Facility.objects.filter(cluster=True):
-            # sms_message = CLUSTER_DAILY_TPL['sms'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
+            sms_message = CLUSTER_DAILY_TPL['sms'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
             email_message = CLUSTER_DAILY_TPL['email'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
-            # send_sms_message(facility.identity, sms_message, bulk=False)
-            send_email_message(facility.identity, CLUSTER_DAILY_TPL['subject'], email_message, bulk=False, attachment_filename=attachment_filename, attachment_content=attachment_content, attachment_mimetype=attachment_mimetype)
-            facility.last_message_date = az_now
+            if sms_enabled:
+                send_sms_message(facility.identity, sms_message, bulk=False)
+            if email_enabled:
+                send_email_message(facility.identity, CLUSTER_DAILY_TPL['subject'], email_message, bulk=False, attachment_filename=attachment_filename, attachment_content=attachment_content, attachment_mimetype=attachment_mimetype)
+                facility.last_message_date = az_now
             facility.save()
