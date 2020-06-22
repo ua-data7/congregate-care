@@ -9,18 +9,20 @@ from django.core.mail import EmailMultiAlternatives
 from django.core import mail
 
 
-attachment_filename = 'LTC Facility Linelist Template Final.xls'
+AMERICA_PHOENIX = pytz.timezone('America/Phoenix')
+
+attachment_filename = 'Linelist_Instruction.pdf'
 attachment_path = os.path.join(settings.BASE_DIR, 'sms', 'templates', 'messages', attachment_filename)
 with open(attachment_path, 'rb+') as f:
     attachment_content = f.read()
-attachment_mimetype = 'application/vnd.ms-excel'
+attachment_mimetype = 'application/pdf'
 
 
 class Command(BaseCommand):
     help = 'Sends a reminder to non-cluster Facilities weekly.'
     # to be scheduled in a cron job at 9am Mondays.
     def handle(self, *args, **options):
-        now = timezone.now()
+        now = timezone.now().astimezone(AMERICA_PHOENIX)
         non_cluser_facilities = {}
         cluster_facilities = {}
         email_enabled = getattr(settings, 'EMAIL_ENABLED', True)

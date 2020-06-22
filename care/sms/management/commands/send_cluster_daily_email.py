@@ -9,11 +9,12 @@ import os
 
 
 AMERICA_PHOENIX = pytz.timezone('America/Phoenix')
-attachment_filename = 'LTC Facility Linelist Template Final.xls'
+
+attachment_filename = 'Linelist_Instruction.pdf'
 attachment_path = os.path.join(settings.BASE_DIR, 'sms', 'templates', 'messages', attachment_filename)
 with open(attachment_path, 'rb+') as f:
     attachment_content = f.read()
-attachment_mimetype = 'application/vnd.ms-excel'
+attachment_mimetype = 'application/pdf'
 
 
 class Command(BaseCommand):

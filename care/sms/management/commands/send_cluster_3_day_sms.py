@@ -6,6 +6,7 @@ from care.sms.utils import CLUSTER_WEEKLY_TPL
 from django.utils import timezone
 import pytz
 
+
 AMERICA_PHOENIX = pytz.timezone('America/Phoenix')
 
 
