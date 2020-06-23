@@ -4,11 +4,17 @@ from django.dispatch import receiver
 from care.sms.twilio import twilio_client
 from care.sms.models import Binding
 from django.conf import settings
+from twilio.base.exceptions import TwilioRestException
+from sentry_sdk import capture_exception
 
 
 @receiver(pre_delete, sender=Binding)
 def remove_binding(sender, instance, **kwargs):
-    twilio_client.notify.services(settings.TWILIO_NOTIFICATION_SERVICE_SID).bindings(instance.binding_sid).delete()
+    try:
+        twilio_client.notify.services(settings.TWILIO_NOTIFICATION_SERVICE_SID).bindings(instance.binding_sid).delete()
+    except TwilioRestException as e:
+        capture_exception(e)
+
 
 @receiver(pre_save, sender=Binding)
 def opt_out_binding(sender, instance, **kwargs):
