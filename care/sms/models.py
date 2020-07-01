@@ -141,13 +141,17 @@ class TwilioMessage(models.Model):
 def send_sms_message(uuid, message, bulk=False):
     if bulk:
         sms_users = list(Facility.objects.filter(identity__in=uuid).values_list('identity', flat=True))
-        # use messaging/notify service.
         if len(sms_users) > 0:
-            twilio_client.notify.services(settings.TWILIO_NOTIFICATION_SERVICE_SID).notifications.create(
-                identity=sms_users,
-                body=message,
-            )
+            # separate the users into 20-long buckets since that's the max twilio can do.
+            for chunk in [sms_users[x:x+20] for x in range(0, len(sms_users), 20)]:
+                twilio_client.notify.services(settings.TWILIO_NOTIFICATION_SERVICE_SID).notifications.create(
+                    identity=chunk,
+                    body=message,
+                )
     else:
+        # twilio requires the identities to be in a list, even if it's just one.
+        if type(uuid) is not list:
+            uuid = [uuid]
         twilio_client.notify.services(settings.TWILIO_NOTIFICATION_SERVICE_SID).notifications.create(
             identity=uuid,
             body=message,
