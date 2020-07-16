@@ -21,6 +21,7 @@ export default function SubmissionDashboard({classes}) {
     const [filters, setFilters] = React.useState({
         minDate: null,
         maxDate: null,
+        neverSubmitted: false,
         newCases: false,
         category: 'all',
         size: 'all',
