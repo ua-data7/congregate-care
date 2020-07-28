@@ -7,6 +7,7 @@ import os
 from django.utils import timezone
 from django.core.mail import EmailMultiAlternatives
 from django.core import mail
+import pytz
 
 
 AMERICA_PHOENIX = pytz.timezone('America/Phoenix')
