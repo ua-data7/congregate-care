@@ -200,7 +200,10 @@ class CustomPagination(PageNumberPagination):
 
 
 def filter_facilities(queryset, filters):
-    if 'minDate' in filters or 'maxDate' in filters:
+
+    if 'neverSubmitted' in filters and filters['neverSubmitted'] == 'true':
+        queryset = queryset.filter(last_upload_date=None)
+    elif 'minDate' in filters or 'maxDate' in filters:
         subs = QualtricsSubmission.objects
         if 'minDate' in filters:
             parsed_date = datetime.datetime.strptime(filters['minDate'], r'%m/%d/%Y')

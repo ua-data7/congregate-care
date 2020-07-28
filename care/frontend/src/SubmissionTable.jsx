@@ -84,6 +84,10 @@ export default function SubmissionTable({submissions, total, cursor, setCursor, 
             key: 'facility__name'
         },
         {
+            label: 'ID',
+            key: 'facility__identity'
+        },
+        {
             label: 'Address',
             key: 'facility__address'
         },
@@ -157,6 +161,7 @@ export default function SubmissionTable({submissions, total, cursor, setCursor, 
                                         </React.Fragment>
                                     }
                                 </TableCell>
+                                <TableCell>{row.facility && row.facility.identity}</TableCell>
                                 <TableCell>{row.facility && row.facility.address}</TableCell>
                                 <TableCell>{row.facility && row.facility.phones}</TableCell>
                                 <TableCell>{row.facility && row.facility.emails}</TableCell>

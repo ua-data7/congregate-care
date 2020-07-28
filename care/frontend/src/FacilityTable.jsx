@@ -82,6 +82,10 @@ export default function FacilityTable({facilities, total, cursor, setCursor, fil
             key: 'name'
         },
         {
+            label: 'ID',
+            key: 'identity'
+        },
+        {
             label: 'Address',
             key: 'address'
         },
@@ -145,6 +149,7 @@ export default function FacilityTable({facilities, total, cursor, setCursor, fil
                                         <Checkbox checked={selectedIndex(facility) !== -1}/>
                                     </TableCell>
                                     <TableCell>{facility.name}</TableCell>
+                                    <TableCell>{facility.identity}</TableCell>
                                     <TableCell>{facility.address}</TableCell>
                                     <TableCell>{facility.phones}</TableCell>
                                     <TableCell>{facility.emails}</TableCell>

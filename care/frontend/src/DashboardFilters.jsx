@@ -88,7 +88,7 @@ export default function DashboardFilters({filters, setFilters, loading}) {
                         }}
                         name="minDate"
                         inputComponent={DateInput}
-                        disabled={loading}
+                        disabled={loading || filters.neverSubmitted}
                     />
                 </Grid>
                 <Grid item xs={1}>
@@ -108,7 +108,24 @@ export default function DashboardFilters({filters, setFilters, loading}) {
                         }}
                         name="maxDate"
                         inputComponent={DateInput}
-                        disabled={loading}
+                        disabled={loading || filters.neverSubmitted}
+                    />
+                </Grid>
+                <Grid item xs={3}>
+                    <FormControlLabel style={{marginLeft: '50px'}}
+                        control={<Checkbox
+                            checked={filters.neverSubmitted}
+                            onChange={event => {
+                                let checked = event.target.checked;
+                                setFilters(prev => ({
+                                    ...prev,
+                                    neverSubmitted: checked
+                                }));
+                            }}
+                            name="neverSubmitted"
+                            disabled={loading} 
+                        />}
+                        label="Never Submitted"
                     />
                 </Grid>
             </Toolbar>

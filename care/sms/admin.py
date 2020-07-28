@@ -5,14 +5,19 @@ from care.sms.models import Binding
 
 
 class FacilityAdmin(admin.ModelAdmin):
-    list_display = ['name', 'liaisons', 'tag_list']
-    search_fields = ['name']
+    list_display = ['name', 'get_identity', 'liaisons', 'tag_list']
+    search_fields = ['name', 'identity']
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('tags')
 
+    def get_identity(self, obj):
+        return obj.identity
+
     def tag_list(self, obj):
         return u", ".join(o.name for o in obj.tags.all())
+
+    get_identity.short_description = 'UUID'
 
 
 class BindingAdmin(admin.ModelAdmin):
