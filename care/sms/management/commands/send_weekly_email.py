@@ -41,11 +41,12 @@ class Command(BaseCommand):
             else:
                 do_message = True
             if do_message:
+                link = facility.qualtrics_link()
                 if email_enabled:
-                    email_message = NON_CLUSTER_WEEKLY_TPL['email'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK, facility_name=facility.name)
+                    email_message = NON_CLUSTER_WEEKLY_TPL['email'].format(uuid=facility.identity, link=link, facility_name=facility.name)
                     send_email_message(facility.identity, NON_CLUSTER_WEEKLY_TPL['subject'], email_message, bulk=False, attachment_filename=attachment_filename, attachment_content=attachment_content, attachment_mimetype=attachment_mimetype)
                 if sms_enabled:
-                    sms_message = NON_CLUSTER_WEEKLY_TPL['sms'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
+                    sms_message = NON_CLUSTER_WEEKLY_TPL['sms'].format(uuid=facility.identity, link=link)
                     send_sms_message(facility.identity, sms_message, bulk=False)
                 if facility.liaisons in non_cluser_facilities:
                     non_cluser_facilities[facility.liaisons].append(f'{facility.name} - {facility.identity}')
@@ -61,11 +62,12 @@ class Command(BaseCommand):
             else:
                 do_message = True
             if do_message:
+                link = facility.qualtrics_link()
                 if email_enabled:
-                    email_message = CLUSTER_WEEKLY_TPL['email'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK, facility_name=facility.name)
+                    email_message = CLUSTER_WEEKLY_TPL['email'].format(uuid=facility.identity, link=link, facility_name=facility.name)
                     send_email_message(facility.identity, CLUSTER_WEEKLY_TPL['subject'], email_message, bulk=False, attachment_filename=attachment_filename, attachment_content=attachment_content, attachment_mimetype=attachment_mimetype)
                 if sms_enabled:
-                    sms_message = CLUSTER_WEEKLY_TPL['sms'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
+                    sms_message = CLUSTER_WEEKLY_TPL['sms'].format(uuid=facility.identity, link=link)
                     send_sms_message(facility.identity, sms_message, bulk=False)
                 if facility.liaisons in cluster_facilities:
                     cluster_facilities[facility.liaisons].append(f'{facility.name} - {facility.identity}')

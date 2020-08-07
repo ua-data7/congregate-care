@@ -45,7 +45,7 @@ class Command(BaseCommand):
                         # and if the last sms date is also null, send them a reminder.
                         do_message = True
                 if do_message:
-                    sms_message = CLUSTER_WEEKLY_TPL['sms'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
+                    sms_message = CLUSTER_WEEKLY_TPL['sms'].format(uuid=facility.identity, link=facility.qualtrics_link())
                     send_sms_message(facility.identity, sms_message, bulk=False)
                     facility.last_sms_date = now
                     facility.save()

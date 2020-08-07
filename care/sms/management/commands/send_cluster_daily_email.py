@@ -25,8 +25,9 @@ class Command(BaseCommand):
         email_enabled = getattr(settings, 'EMAIL_ENABLED', True)
         sms_enabled = getattr(settings, 'SMS_ENABLED', True)
         for facility in Facility.objects.filter(cluster=True):
-            sms_message = CLUSTER_DAILY_TPL['sms'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK)
-            email_message = CLUSTER_DAILY_TPL['email'].format(uuid=facility.identity, link=settings.QUALTRICS_SURVEY_LINK, facility_name=facility.name)
+            link = facility.qualtrics_link()
+            sms_message = CLUSTER_DAILY_TPL['sms'].format(uuid=facility.identity, link=link)
+            email_message = CLUSTER_DAILY_TPL['email'].format(uuid=facility.identity, link=link, facility_name=facility.name)
             if sms_enabled:
                 send_sms_message(facility.identity, sms_message, bulk=False)
             if email_enabled:

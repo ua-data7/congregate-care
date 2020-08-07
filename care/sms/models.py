@@ -46,6 +46,14 @@ class Facility(models.Model):
                 self.identity = get_uuid()
         super(Facility, self).save(*args, **kwargs)
 
+    def qualtrics_link(self):
+        all_tags = self.tags.names()
+        is_behavioral = list(set(all_tags) & set(settings.BEHAVIORAL_TAGS))
+        if len(is_behavioral) > 0:
+            return settings.QUALTRICS_SURVEY_LINK_BEHAVIORAL
+        else:
+            return settings.QUALTRICS_SURVEY_LINK
+
     def __unicode__(self):
         return self.name
 
