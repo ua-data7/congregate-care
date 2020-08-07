@@ -31,7 +31,11 @@ export default function DashboardFilters({filters, setFilters, loading}) {
         'Apartments',
         'ALF',
         'LTC',
-        'Other'
+        'Other',
+        'Behavioral Health',
+        'Hospice',
+        'Home Health',
+        'Group Home',
     ];
 
     return (
