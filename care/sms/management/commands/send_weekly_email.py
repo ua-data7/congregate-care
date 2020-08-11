@@ -12,12 +12,6 @@ import pytz
 
 AMERICA_PHOENIX = pytz.timezone('America/Phoenix')
 
-attachment_filename = 'Linelist_Instruction.pdf'
-attachment_path = os.path.join(settings.BASE_DIR, 'sms', 'templates', 'messages', attachment_filename)
-with open(attachment_path, 'rb+') as f:
-    attachment_content = f.read()
-attachment_mimetype = 'application/pdf'
-
 
 class Command(BaseCommand):
     help = 'Sends a reminder to non-cluster Facilities weekly.'
@@ -44,7 +38,7 @@ class Command(BaseCommand):
                 link = facility.qualtrics_link()
                 if email_enabled:
                     email_message = NON_CLUSTER_WEEKLY_TPL['email'].format(uuid=facility.identity, link=link, facility_name=facility.name)
-                    send_email_message(facility.identity, NON_CLUSTER_WEEKLY_TPL['subject'], email_message, bulk=False, attachment_filename=attachment_filename, attachment_content=attachment_content, attachment_mimetype=attachment_mimetype)
+                    send_email_message(facility.identity, NON_CLUSTER_WEEKLY_TPL['subject'], email_message, bulk=False)
                 if sms_enabled:
                     sms_message = NON_CLUSTER_WEEKLY_TPL['sms'].format(uuid=facility.identity, link=link)
                     send_sms_message(facility.identity, sms_message, bulk=False)
@@ -65,7 +59,7 @@ class Command(BaseCommand):
                 link = facility.qualtrics_link()
                 if email_enabled:
                     email_message = CLUSTER_WEEKLY_TPL['email'].format(uuid=facility.identity, link=link, facility_name=facility.name)
-                    send_email_message(facility.identity, CLUSTER_WEEKLY_TPL['subject'], email_message, bulk=False, attachment_filename=attachment_filename, attachment_content=attachment_content, attachment_mimetype=attachment_mimetype)
+                    send_email_message(facility.identity, CLUSTER_WEEKLY_TPL['subject'], email_message, bulk=False)
                 if sms_enabled:
                     sms_message = CLUSTER_WEEKLY_TPL['sms'].format(uuid=facility.identity, link=link)
                     send_sms_message(facility.identity, sms_message, bulk=False)
