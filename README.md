@@ -79,10 +79,7 @@ Important vars to edit during a new deploy are:
     TWILIO_PHONE_NUMBERS = []
     TWILIO_ACCOUNT_SID = <REPLACE THIS>
     TWILIO_AUTH_TOKEN = <REPLACE THIS>
-    REDCAP_TOKEN = {
-        'en': '<TOKEN HERE>',
-        'es': '<TOKEN HERE>',
-    }	
+
 
 
 This uses an old import trick so beware, it 'loads' itself into the `/settings/__init__.py` so that base/local/dotenv can be combined into one voltron setting module.
