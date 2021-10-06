@@ -17,7 +17,7 @@ export default function MessageSender({open, onClose, recipients, closeModal}) {
     const [copied, setCopied] = React.useState(false);
     const [smsToast, setSmsToast] = React.useState('');
     const [emailToast, setEmailToast] = React.useState('');
-        
+
     function copyEmails() {
         let emails = recipients.map(facility => facility.emails).join(';');
         navigator.clipboard.writeText(emails);
@@ -29,6 +29,35 @@ export default function MessageSender({open, onClose, recipients, closeModal}) {
         setEmail('');
         setSubject('');
     }, [recipients]);
+
+    function send_email() {
+        let uuids = recipients.map(r => r.identity);
+        axios.post('/api/sendemail', {
+            uuid: uuids,
+            bulk: true,
+            subject: subject,
+            message: email
+        }).then(res => {
+            setEmailToast('Emails sent successfully.');
+        }).catch(err => {
+            setEmailToast('WARNING: Could not send one or more emails.')
+        });
+        closeModal();
+    };
+
+    function send_sms() {
+        let uuids = recipients.map(r => r.identity);
+        axios.post('/api/sendsms', {
+            uuid: uuids,
+            bulk: true,
+            message: sms
+        }).then(res => {
+            setSmsToast('SMS sent successfully.');
+        }).catch(err => {
+            setSmsToast('WARNING: Could not send one or more SMS.')
+        });
+        closeModal();
+    };
 
     function send() {
         let uuids = recipients.map(r => r.identity);
@@ -55,7 +84,7 @@ export default function MessageSender({open, onClose, recipients, closeModal}) {
             });
         }
         closeModal();
-    }
+    };
 
     return (
         <React.Fragment>
@@ -88,8 +117,11 @@ export default function MessageSender({open, onClose, recipients, closeModal}) {
                                     />
                                 </FormControl>
                             </Grid>
+                            <Grid item xs={12}>
+                                <Button style={{marginLeft: '5px'}} onClick={closeModal}>Close</Button>
+                            </Grid>
                             <Grid item xs={5}>
-                                <Typography variant="subtitle1" component="h3">SMS (Optional)</Typography>
+                                <Typography variant="subtitle1" component="h3">SMS</Typography>
                                 <FormControl fullWidth>
                                     <TextField
                                         value={sms}
@@ -97,16 +129,18 @@ export default function MessageSender({open, onClose, recipients, closeModal}) {
                                         placeholder="Enter message (160 chars max)"
                                         multiline
                                         rows={5}
+                                        maxlength="160"
                                     />
                                 </FormControl>
                             </Grid>
                             <Grid item xs={12}>
-                                <Button variant="contained" color="primary"  disabled={!subject || !email} onClick={send}>Send</Button>
+                                <Button variant="contained" color="primary"  disabled={!subject || !email} onClick={send_email}>Send Email</Button>
+                                <Button variant="contained" color="primary"  disabled={!subject || !sms} onClick={send_sms}>Send SMS</Button>
+                                <Button variant="contained" color="primary"  disabled={!subject || !email || !sms} onClick={send}>Send Both</Button>
                                 <Button style={{marginLeft: '5px'}} onClick={closeModal}>Close</Button>
                             </Grid>
                         </Grid>
                     </Box>
-                    
                 </Paper>
             </Dialog>
             <Snackbar
